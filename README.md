@@ -4,6 +4,7 @@ Useful utilities and libraries for acoustics work
 # Important Note:
 This was compiled and installed on an x86 Linux installation. Specifically, on Void Linux:
 https://voidlinux.org/
+You should be able to play around with the examples in bin and the headers in include without performing a full install.
 
 # Compiling
 ```
