@@ -1,70 +1,48 @@
 #ifndef XCORR_H
 #define XCORR_H
 
-#include "fft.h"
-#include "ifft.h"
+#include "../include/fastFT.h"
 
 #include <mutex>
 #include <thread>
-#include <gsl/gsl_vector.h>
-#include <gsl/gsl_complex_math.h>
 
 // XCORR N_chan of real data
 // Raw input array needs to be of size N_chan x 2*N_samples_input
 // Zero-padding must be done before XCORR_all() is called.
 
-class XCORRer {
+class xcorrelator {
 	public:
-		XCORRer(gsl_vector* input, int N_chan, gsl_vector* output):
-			N_chan(N_chan) {
-				int N_corr = N_chan*(N_chan-1)/2;
-				int N_fft = input->size/N_chan;
-				int N_bin = N_fft/2 + 1;
-
-				if(input == NULL) return; // exits if no input array is passed
-				raw_input = input;
-				_input = new gsl_vector_view[N_chan];
-				for(int c = 0; c < N_chan; ++c)
-					_input[c] = gsl_vector_subvector_with_stride(raw_input, c, N_chan, N_fft);
-
-				if(output == NULL) { // creates output array if none is passed
-					raw_output = gsl_vector_calloc(N_corr*N_fft);
-					Q_handle_output = true;
-				} else {
-					raw_output= output;
-					Q_handle_output = false;
-				}
-				_output = new gsl_vector_view[N_corr];
-				for(int c = 0; c < N_corr; ++c)
-					_output[c] = gsl_vector_subvector_with_stride(raw_output, c, N_corr, N_fft);
-
-				fft = new FFTer(raw_input, N_chan, N_fft, NULL);
-
-				inverse_fft_input = gsl_vector_complex_calloc(N_corr*N_bin);
-				ifft = new IFFTer(inverse_fft_input, N_corr, N_fft, raw_output);
+		xcorrelator(int N_channel, int lengthFFT):
+			N_channel(N_channel),
+			lengthFFT(lengthFFT) {
+				int N_correlation = N_channel*(N_channel-1)/2;
+				int N_bin = lengthFFT/2 + 1;
+				FFT = new fastFT<double, std::complex<double>>(N_channel, lengthFFT);
+				iFFT = new fastFT<std::complex<double>, double>(N_channel, lengthFFT);
 			}
 
-		~XCORRer() {
-			gsl_vector_complex_free(inverse_fft_input);
-			if(Q_handle_output)
-				gsl_vector_free(raw_output);
-
-			delete[] _input;
-			delete[] _output;
-
-			delete fft;
-			delete ifft;
+		~xcorrelator() {
+			delete FFT;
+			delete iFFT;
 		}
 
-		bool XCORR_all();
+		bool xcorrelate() {
+			FFT.FFT();
+		}
 
-		gsl_vector_view* _input;
-		gsl_vector_view* _output;
-
-		gsl_vector* raw_input;
-		gsl_vector* raw_output;
-
-		bool XCORR(int chan_a, int chan_b);
+		bool xcorrelate(double freshInput[]) {
+			memcpy(FFT.rawInput, freshInput, N_channel * (lengthFT/2 + 1) * sizeof(std::complex<double>));
+			FFT.FFT();
+			int pairNum = 0;
+			for(int b = 0; b < lengthFT/2 + 1; ++b;) {
+				for(int c = 0; c < N_channel; ++c) {
+					for(int d = c; d < N_channel; ++d) {
+						iFFT.rawInput[pairNum] = FFT.rawOutput[c] * std::conj(FFT.rawOutput[d]);
+						pairNum++;
+					}
+				}
+			}
+		}
 
 		int pair_num(int chan_a, int chan_b) {
 			return (2*chan_a*N_chan - chan_a*chan_a + 2*chan_b - 3*chan_a - 2)/2;
@@ -72,14 +50,12 @@ class XCORRer {
 	private:
 		void conjugate_multiply(gsl_vector_complex* input_a, gsl_vector_complex* input_b, gsl_vector_complex* output);
 
-		FFTer* fft;
-		IFFTer* ifft;
+		fastFT* FFT;
+		fastFT* iFFT;
 
-		gsl_vector_complex* inverse_fft_input;
-
-		const int N_chan;
+		const int N_channel;
+		const int lengthFT;
 
 		std::mutex buffer_lock;
-		bool Q_handle_output;
 };
 #endif

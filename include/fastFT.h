@@ -5,6 +5,7 @@
 #include <thread>
 #include <complex>
 #include <fftw3.h>
+#include <algorithm> //std::transform()
 
 // FFT N_channel of real data
 
@@ -23,21 +24,41 @@ class fastFT {
 			fftw_free(rawOutput);
 		}
 
+		template<typename T1>
+		bool convertData(const T1& data) {
+			std::transform(data, data + N_channel * lengthFT, rawInput, static_cast_func());
+			return true;
+		}
+
 		bool FFT() {
 			buffer_lock.lock();
 			fftw_execute(bigPlan);
 			buffer_lock.unlock();
 			return true;
 		}
-		bool FFT(double* freshInput) {
+		bool FFT(double freshInput[]) {
 			memcpy(rawInput, freshInput, N_channel * lengthFT * sizeof(double));
 			buffer_lock.lock();
 			fftw_execute(bigPlan);
 			buffer_lock.unlock();
 			return true;
 		}
-		bool FFT(std::complex<double>* freshInput) {
+		bool FFT(std::complex<double> freshInput[]) {
 			memcpy(rawInput, freshInput, N_channel * (lengthFT/2 + 1) * sizeof(std::complex<double>));
+			buffer_lock.lock();
+			fftw_execute(bigPlan);
+			buffer_lock.unlock();
+			return true;
+		}
+		bool FFT(int freshInput[]) {
+			convertData(freshInput);
+			buffer_lock.lock();
+			fftw_execute(bigPlan);
+			buffer_lock.unlock();
+			return true;
+		}
+		bool FFT(std::complex<int> freshInput[]) {
+			convertData(freshInput);
 			buffer_lock.lock();
 			fftw_execute(bigPlan);
 			buffer_lock.unlock();
@@ -88,6 +109,10 @@ class fastFT {
 							N_channel, 1,
 							FFTW_ESTIMATE);
 		}
+
+		struct static_cast_func { // use this in the converstion from any type to correct input type
+			template <typename T1> S operator()(const T1& x) const{ return static_cast<S>(x); }
+		}; //std::transform(begin_input, end_input, output, static_cast_func<TYPE>());
 };
 
 #endif

@@ -14,7 +14,9 @@ class simplePipe {
 			if(PERMISSIONS == O_RDONLY || PERMISSIONS == O_WRONLY)
 				perm = PERMISSIONS;
 			else {
+#ifdef DEBUG
 				fprintf(stderr, "Invalid permissions\nPlease choose O_RDONLY or O_WRONLY.\n");
+#endif
 				return;
 			}
 
@@ -26,7 +28,9 @@ class simplePipe {
 
 				// Check if the file is a FIFO
 				if(fstat(fifo, &st) && !S_ISFIFO(st.st_mode)) {
+#ifdef DEBUG
 					fprintf(stderr, "File exists but is not a named pipe.\n");
+#endif
 					close(fifo);
 					return;
 				}
@@ -47,20 +51,26 @@ class simplePipe {
 				return read(fifo, message, Size*sizeof(T));
 			}
 			else {
+#ifdef DEBUG
 				fprintf(stderr, "Invalid permissions\nDid you mean O_RDONLY?\n");
+#endif
 				return -1;
 			}
 		}
 
 		int pipeOut(T (&message)[Size]) {
 			if(fifo < 0) {
+#ifdef DEBUG
 				fprintf(stderr, "Attempting to re-open the fifo file.\n");
+#endif
 				fifo = open(fifo_filename.c_str(), perm | O_NONBLOCK);
 
 				struct stat st;
 				// Check if the file is a FIFO
 				if(fstat(fifo, &st) && !S_ISFIFO(st.st_mode)) {
+#ifdef DEBUG
 					fprintf(stderr, "File exists but is not a named pipe.\nAre you reading from the FIFO file?\n");
+#endif
 					close(fifo);
 					return -1;
 				}
@@ -69,7 +79,9 @@ class simplePipe {
 			if(perm == O_WRONLY)
 				return write(fifo, message, Size*sizeof(T));
 			else {
+#ifdef DEBUG
 				fprintf(stderr, "Invalid permissions\nDid you mean O_WRONLY?\n");
+#endif
 				return -1;
 			}
 		}
