@@ -7,10 +7,17 @@ https://voidlinux.org/
 You should be able to play around with the examples in bin and the headers in include without performing a full install.
 
 # Dependencies
-This repository must be installed to use the decimator (install from source)
+This repository must be installed to use the decimator.
+
 https://github.com/berndporr/iir1
 
-Be sure to append the following to your bashrc or other startup script:
+If using Void Linux, simply
+```
+sudo xbps-install -Su libiir1-devel
+```
+
+Otherwise, follow the instructions to install from source.
+Be sure to append the following to your bashrc or other startup script if installing from source:
 ```
 export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 ```
