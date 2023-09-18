@@ -5,7 +5,7 @@
 #include <iomanip>
 using namespace std;
 #ifndef SIZE
-#define SIZE 8
+#define SIZE 1
 #endif
 
 int main(int argc, char* argv[]) {

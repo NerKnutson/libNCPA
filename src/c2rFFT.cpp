@@ -32,10 +32,11 @@ int main(int argc, char* argv[]) {
 			c2rFFT.FFT();
 			for(int t = 0; t < lengthFT; ++t) {
 				for(int c = 0; c < N_channel; ++c) {
+					cout << c2rFFT.rawOutput[c + N_channel*t];
 					if(c < N_channel - 1)
-						cout << c2rFFT.rawOutput[c + N_channel*t] << "\t";
+						cout << "\t";
 					else
-						cout << c2rFFT.rawOutput[c + N_channel*t] << endl;
+						cout << endl;
 				}
 			}
 			indexData = 0;

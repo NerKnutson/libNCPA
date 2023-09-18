@@ -17,7 +17,7 @@ LDLIBS=-liir -lfftw3
 
 all: executables
 
-executables: sineMaker noiseMaker noisePropagator simplePipeIn simplePipeOut rollingDFT decimator r2cFFT c2rFFT
+executables: sineMaker noiseMaker noisePropagator simplePipeIn simplePipeOut rollingDFT decimator r2cFFT c2rFFT xcorrelator signalAdd
 
 sineMaker: src/sineMaker.cpp
 	$(CXX) $(CFLAGS) $(LDLIBS) $(WARNING) $^ -o bin/$@
@@ -45,6 +45,12 @@ r2cFFT: src/r2cFFT.cpp
 	
 c2rFFT: src/c2rFFT.cpp
 	$(CXX) $(CFLAGS) $(LDLIBS) $(WARNING) $^ -o bin/$@
+	
+xcorrelator: src/xcorrelator.cpp
+	$(CXX) $(CFLAGS) $(LDLIBS) $(WARNING) $^ -o bin/$@
+
+signalAdd: src/signalAdd.cpp
+	$(CXX) $(CFLAGS) $(LDLIBS) $(WARNING) $^ -o bin/$@
 
 install:
 	cp include/importArrayGeometry.h $(INSTALL_PREFIX)/include/
@@ -56,6 +62,11 @@ install:
 	cp bin/simplePipeIn $(INSTALL_PREFIX)/bin/
 	cp bin/simplePipeOut $(INSTALL_PREFIX)/bin/
 	cp bin/rollingDFT $(INSTALL_PREFIX)/bin/
+	cp bin/decimator $(INSTALL_PREFIX)/bin/
+	cp bin/r2cFFT $(INSTALL_PREFIX)/bin/
+	cp bin/c2rFFT $(INSTALL_PREFIX)/bin/
+	cp bin/xcorrelator $(INSTALL_PREFIX)/bin/
+	cp bin/signalAdd $(INSTALL_PREFIX)/bin/
 
 uninstall:
 	rm -f $(INSTALL_PREFIX)/include/importArrayGeometry.h
@@ -67,6 +78,11 @@ uninstall:
 	rm -f $(INSTALL_PREFIX)/bin/simplePipeIn
 	rm -f $(INSTALL_PREFIX)/bin/simplePipeOut
 	rm -f $(INSTALL_PREFIX)/bin/rollingDFT
+	rm -f $(INSTALL_PREFIX)/bin/decimator
+	rm -f $(INSTALL_PREFIX)/bin/r2cFFT
+	rm -f $(INSTALL_PREFIX)/bin/c2rFFT
+	rm -f $(INSTALL_PREFIX)/bin/xcorrelator
+	rm -f $(INSTALL_PREFIX)/bin/signalAdd
 
 clean:
 	rm -f bin/*

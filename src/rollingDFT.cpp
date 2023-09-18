@@ -45,10 +45,11 @@ int main(int argc, char* argv[]) {
 			for(int b = 0; b < N_bin; ++b) {
 				complex<double>* rOutput = roller[b]->DFT((double*)&data, (indexData/N_channel - 1 + lengthInput) % lengthInput, (2*lengthFT));
 				for(int c = 0; c < N_channel; ++c) {
+					cout << rOutput[c];
 					if(c < N_channel - 1)
-						cout << rOutput[c] << "\t";
+						 cout << "\t";
 					else
-						cout << rOutput[c] << endl;
+						cout << endl;
 				}
 			}
 		}

@@ -1,5 +1,7 @@
 #ifndef fastFT_H
 #define fastFT_H
+// FFT(double freshInput[]) receives <lengthFT> frame of data from <N_channel> channels
+// FFT() performs an FFT on the currently buffered data
 
 #include <mutex>
 #include <thread>
@@ -85,6 +87,9 @@ class fastFT {
 				r2c->rawInput = (S*) fftw_alloc_real(lengthFT*N_channel);
 				r2c->rawOutput = (T*) fftw_alloc_complex(N_bin*N_channel);
 
+				std::fill(r2c->rawInput, r2c->rawInput + lengthFT*N_channel, 0.0);
+				std::fill(r2c->rawOutput, r2c->rawOutput + N_bin*N_channel, 0.0);
+
 				r2c->bigPlan
 					= fftw_plan_many_dft_r2c(1, &lengthFT, N_channel,
 							r2c->rawInput, NULL,
@@ -100,6 +105,9 @@ class fastFT {
 
 				c2r->rawInput = (S*) fftw_alloc_complex(N_bin*N_channel);
 				c2r->rawOutput = (T*) fftw_alloc_real(lengthFT*N_channel);
+
+				std::fill(c2r->rawInput, c2r->rawInput + N_bin*N_channel, 0.0);
+				std::fill(c2r->rawOutput, c2r->rawOutput + lengthFT*N_channel, 0.0);
 
 				c2r->bigPlan
 					= fftw_plan_many_dft_c2r(1, &lengthFT, N_channel,

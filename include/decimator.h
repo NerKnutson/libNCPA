@@ -1,5 +1,6 @@
 #ifndef DECIMATOR_H
 #define DECIMATOR_H
+// decimate(double freshInput[]) receives a single frame of data from <N_channel> channels
 
 #include <thread>
 #include <mutex>
@@ -45,7 +46,6 @@ class decimator {
 		}
 		unsigned decimationState;
 	private:
-		double* rawInput;
 		double* rawOutput;
 
 		Iir::ChebyshevII::LowPass<ORDER>* low_pass;

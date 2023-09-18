@@ -5,6 +5,8 @@
 #define MAX_CHANNELS 128
 #endif
 
+#include <cstdio>
+#include <cstddef>
 #ifdef DEBUG
 #include <iostream> // std::cerr std::endl
 #include <iomanip> // std::setw(int)
@@ -15,7 +17,7 @@
                            "...\n"
 // Returns Number of channels
 // Passes back array geometry by reference
-int importArrayGeometry(char filename[], double (&arrayGeometry)[MAX_CHANNELS][3]) {
+inline int importArrayGeometry(char filename[], double (&arrayGeometry)[MAX_CHANNELS][3]) {
 	int N_channel = 0;
 
 	FILE* inputFile = fopen(filename, "r");

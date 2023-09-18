@@ -2,38 +2,48 @@
 #include <iomanip> // std::setprecision()
 #include <cstring> // std::strcmp(char*,char*)
 #include <random> // std::default_random_engine generator std::normal_distribution<double> dist(double, double)
+#include <Iir.h> // Iir::Butterworth::LowPass<int>
+#include <unistd.h> // std::usleep(int);
 using namespace std;
 
 int main(int argc, char* argv[]) {
-	if(argc != 3 && argc != 1){
-		cerr << "Usage: " << argv[0] << " --N_sample <number of samples>"  << endl;
+	if(argc != 5 && argc != 7){
+		cerr << "Usage: " << argv[0] << " --centerFrequency <frequency (Hz)> --sampleRate <sampleRate (Hz)> [optional: --widthFrequency <frequency Hz>]" << endl;
 		return 1;
 	}
+	double centerFrequency = -1; // Hz
+	double sampleRate = -1; // Hz
+	double widthFrequency = 10; // Hz
 
-	int N_sample = 0;
 	for(int arg = 0; arg < argc; ++arg) {
-		if(strcmp(argv[arg], "--N_sample") == 0)
-			sscanf(argv[arg + 1], "%d", &N_sample);
+		if(strcmp(argv[arg], "--centerFrequency") == 0)
+			sscanf(argv[arg + 1], "%lf", &centerFrequency);
+		else if(strcmp(argv[arg], "--sampleRate") == 0)
+			sscanf(argv[arg + 1], "%lf", &sampleRate);
+		else if(strcmp(argv[arg], "--widthFrequency") == 0)
+			sscanf(argv[arg + 1], "%lf", &widthFrequency);
 	}
-	if(N_sample < 0) {
-		cerr << "Error in " << argv[0] << ":\n Invalid command-line arguments" << endl;
+	if(2*centerFrequency > sampleRate) {
+		cerr << "Given frequency and sample rate do not satisfy Nyquist-Shannon theorem" << endl;
+		return 1;
+	} else if(centerFrequency < 0) {
+		cerr << "Invalid frequency: must be > 0" << endl;
+		return 1;
+	} else if(sampleRate < 0 ) {
+		cerr << "Invalid sampleRate: must be > 0" << endl;
 		return 1;
 	}
 
-	const double mean = 0.0;
-	const double stddev = 1.0;
-	default_random_engine generator;
-	normal_distribution<double> dist(mean, stddev);
+	Iir::Butterworth::BandPass<3> bandPass;
+	bandPass.setup(sampleRate, centerFrequency, widthFrequency);
 
-	int channel = 0;
+	default_random_engine generator;
+	generator.seed(time(NULL));
+	normal_distribution<double> dist(0.0, 1.0);
 
 	cout << setprecision(numeric_limits<double>::digits10 + 1);
-	if(N_sample == 0)
-		while(true)
-			cout << dist(generator) << endl;
-	else
-		for(int s = 0; s < N_sample; ++s)
-			cout << dist(generator) << endl;
+	while(true)
+		cout << bandPass.filter(dist(generator)) << endl;
 
 	return 0;
 }
