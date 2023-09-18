@@ -20,37 +20,37 @@ all: executables
 executables: sineMaker noiseMaker noisePropagator simplePipeIn simplePipeOut rollingDFT decimator r2cFFT c2rFFT xcorrelator signalAdd
 
 sineMaker: src/sineMaker.cpp
-	$(CXX) $(CFLAGS) $(LDLIBS) $(WARNING) $^ -o bin/$@
+	$(CXX) $(CFLAGS) $(WARNING) $^ -o bin/$@ $(LDLIBS) 
 
 noiseMaker: src/noiseMaker.cpp
-	$(CXX) $(CFLAGS) $(LDLIBS) $(WARNING) $^ -o bin/$@
+	$(CXX) $(CFLAGS) $(WARNING) $^ -o bin/$@ $(LDLIBS) 
 
 noisePropagator: src/noisePropagator.cpp
-	$(CXX) $(CFLAGS) $(LDLIBS) $(WARNING) $^ -o bin/$@
+	$(CXX) $(CFLAGS) $(WARNING) $^ -o bin/$@ $(LDLIBS)
 
 simplePipeIn: src/simplePipeIn.cpp
-	$(CXX) $(CFLAGS) $(LDLIBS) $(WARNING) $^ -o bin/$@
+	$(CXX) $(CFLAGS) $(WARNING) $^ -o bin/$@ $(LDLIBS)
 
 simplePipeOut: src/simplePipeOut.cpp
-	$(CXX) $(CFLAGS) $(LDLIBS) $(WARNING) $^ -o bin/$@
+	$(CXX) $(CFLAGS) $(WARNING) $^ -o bin/$@ $(LDLIBS)
 
 rollingDFT: src/rollingDFT.cpp
-	$(CXX) $(CFLAGS) $(LDLIBS) $(WARNING) $^ -o bin/$@
+	$(CXX) $(CFLAGS) $(WARNING) $^ -o bin/$@ $(LDLIBS)
 	
 decimator: src/decimator.cpp
-	$(CXX) $(CFLAGS) $(LDLIBS) $(WARNING) $^ -o bin/$@
+	$(CXX) $(CFLAGS) $(WARNING) $^ -o bin/$@ $(LDLIBS)
 	
 r2cFFT: src/r2cFFT.cpp
-	$(CXX) $(CFLAGS) $(LDLIBS) $(WARNING) $^ -o bin/$@
+	$(CXX) $(CFLAGS) $(WARNING) $^ -o bin/$@ $(LDLIBS)
 	
 c2rFFT: src/c2rFFT.cpp
-	$(CXX) $(CFLAGS) $(LDLIBS) $(WARNING) $^ -o bin/$@
+	$(CXX) $(CFLAGS) $(WARNING) $^ -o bin/$@ $(LDLIBS)
 	
 xcorrelator: src/xcorrelator.cpp
-	$(CXX) $(CFLAGS) $(LDLIBS) $(WARNING) $^ -o bin/$@
+	$(CXX) $(CFLAGS) $(WARNING) $^ -o bin/$@ $(LDLIBS)
 
 signalAdd: src/signalAdd.cpp
-	$(CXX) $(CFLAGS) $(LDLIBS) $(WARNING) $^ -o bin/$@
+	$(CXX) $(CFLAGS) $(WARNING) $^ -o bin/$@ $(LDLIBS)
 
 install:
 	cp include/importArrayGeometry.h $(INSTALL_PREFIX)/include/
