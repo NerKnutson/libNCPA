@@ -6,6 +6,19 @@ This was compiled and installed on an x86 Linux installation. Specifically, on V
 https://voidlinux.org/
 You should be able to play around with the examples in bin and the headers in include without performing a full install.
 
+# Dependencies
+This repository must be installed to use the decimator (install from source)
+https://github.com/berndporr/iir1
+
+Be sure to append the following to your bashrc or other startup script:
+```
+export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+```
+Or run the decimator class as
+```
+LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH decimator <...>
+```
+
 # Compiling
 ```
 make
