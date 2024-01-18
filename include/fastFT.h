@@ -77,7 +77,6 @@ class fastFT {
 		const int lengthFT;
 
 		std::mutex buffer_lock;
-		bool Q_handle_output;
 
 		fastFT(fastFT<double, std::complex<double>>* r2c, int N_channel, int lengthFT):
 			N_channel(N_channel),

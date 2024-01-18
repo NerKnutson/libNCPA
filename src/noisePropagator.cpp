@@ -25,7 +25,7 @@ void calcSampleDelays(double sampleDelays[], double arrayGeometry[][3], double s
 
 int main(int argc, char* argv[]) {
 	if(argc != 5){
-		cerr << "Usage: " << argv[0] << " --arrayGeometry <array geometry filename> --signalInfo <signal information filename>\n" << endl;
+		cerr << "Usage: " << argv[0] << " --arrayGeometry <array geometry filename> --signalInfo <signal information filename> [optional: --humanReadable]\n" << endl;
 		cerr << "Array Geometry File Format:\n"<< ARRAY_GEOMETRY_FMT << endl;
 		cerr << "Signal Source File Format:\n"<< SIGNAL_SOURCE_FMT << endl;
 		cerr << "Note: units should follow the KMS standard (kilogram, meter, second)\n" << endl;
@@ -35,14 +35,20 @@ int main(int argc, char* argv[]) {
 	double arrayGeometry[MAX_CHANNELS][3];
 	int N_channel = 0;
 	FILE* inputFile = NULL;
+	char inputFilename[256];
 	filesystem::path path;
+	bool humanReadable = false;
+
 	for(int arg = 0; arg < argc; ++arg) {
-		if(strcmp(argv[arg], "--arrayGeometry") == 0)
+		if(strcmp(argv[arg], "--arrayGeometry") == 0 || strcmp(argv[arg], "-aG") == 0)
 			N_channel = importArrayGeometry(argv[arg + 1], arrayGeometry);
-		else if(strcmp(argv[arg], "--signalInfo") == 0) {
+		else if(strcmp(argv[arg], "--signalInfo") == 0 || strcmp(argv[arg], "-sI") == 0) {
 			inputFile = fopen(argv[arg + 1], "r");
+			strcpy(inputFilename, argv[arg + 1]);
 			path = argv[arg + 1];
 		}
+		else if(strcmp(argv[arg], "--humanReadable") == 0 || strcmp(argv[arg], "-hR") == 0)
+			humanReadable = true;
 	}
 	if(N_channel <= 0 || inputFile == NULL) {
 		cerr << "Error in " << argv[0] << ":\n Invalid command-line arguments" << endl;
@@ -51,7 +57,7 @@ int main(int argc, char* argv[]) {
 
 	double slowness[3];
 	double sampleFrequency = calcSlownessVector(inputFile, slowness);
-
+	fclose(inputFile);
 
 	double sampleDelays[N_channel];
 	calcSampleDelays(sampleDelays, arrayGeometry, slowness, N_channel, sampleFrequency);
@@ -60,30 +66,58 @@ int main(int argc, char* argv[]) {
 	fill(inputBuffer, inputBuffer+inputBufferSize, 0.0);
 	unsigned inputIndex = 0;
 
-	cout << setprecision(numeric_limits<double>::digits10 + 1);
 	filesystem::file_time_type fileTime = filesystem::last_write_time(path);
-	while(cin >> inputBuffer[inputIndex]) {
-		for(int c = 0; c < N_channel; ++c) {
-			int upperDelay = std::ceil(sampleDelays[c]);
-			int lowerDelay = std::floor(sampleDelays[c]);
-			unsigned channelInputIndexUpper = (inputIndex + upperDelay + inputBufferSize) % inputBufferSize;
-			unsigned channelInputIndexLower = (inputIndex + lowerDelay + inputBufferSize) % inputBufferSize;
-			double output = 0;
-			if(upperDelay == lowerDelay)
-				output = inputBuffer[channelInputIndexUpper];
-			else
-				output = (upperDelay - sampleDelays[c]) * inputBuffer[channelInputIndexUpper] + (sampleDelays[c] - lowerDelay) * inputBuffer[channelInputIndexLower];
-			if(c < N_channel - 1)
-				cout << output << "\t";
-			else
-				cout << output << endl;
+	if(humanReadable) { // Print human-readable data
+		cout << setprecision(numeric_limits<double>::digits10 + 1);
+		while(cin >> inputBuffer[inputIndex]) {
+			filesystem::file_time_type checkFileTime = filesystem::last_write_time(path);
+			if(fileTime != checkFileTime) {
+				inputFile = fopen(inputFilename, "r");
+				sampleFrequency = calcSlownessVector(inputFile, slowness);
+				fclose(inputFile);
+				calcSampleDelays(sampleDelays, arrayGeometry, slowness, N_channel, sampleFrequency);
+				fileTime = checkFileTime;
+			}
+			for(int c = 0; c < N_channel; ++c) {
+				int upperDelay = std::ceil(sampleDelays[c]);
+				int lowerDelay = std::floor(sampleDelays[c]);
+				unsigned channelInputIndexUpper = (inputIndex + upperDelay + inputBufferSize) % inputBufferSize;
+				unsigned channelInputIndexLower = (inputIndex + lowerDelay + inputBufferSize) % inputBufferSize;
+				double output = 0;
+				if(upperDelay == lowerDelay)
+					output = inputBuffer[channelInputIndexUpper];
+				else
+					output = (upperDelay - sampleDelays[c]) * inputBuffer[channelInputIndexUpper] + (sampleDelays[c] - lowerDelay) * inputBuffer[channelInputIndexLower];
+				if(c < N_channel - 1)
+					cout << output << "\t";
+				else
+					cout << output << endl;
+			}
+			inputIndex = (inputIndex + 1) % inputBufferSize;
 		}
-		inputIndex = (inputIndex + 1) % inputBufferSize;
-		filesystem::file_time_type checkFileTime = filesystem::last_write_time(path);
-		if(fileTime != checkFileTime) {
-			sampleFrequency = calcSlownessVector(inputFile, slowness);
-			calcSampleDelays(sampleDelays, arrayGeometry, slowness, N_channel, sampleFrequency);
-			fileTime = checkFileTime;
+	} else {
+		while(fread(&inputBuffer[inputIndex], 1, sizeof(double), stdin)) {
+			filesystem::file_time_type checkFileTime = filesystem::last_write_time(path);
+			if(fileTime != checkFileTime) {
+				inputFile = fopen(inputFilename, "r");
+				sampleFrequency = calcSlownessVector(inputFile, slowness);
+				fclose(inputFile);
+				calcSampleDelays(sampleDelays, arrayGeometry, slowness, N_channel, sampleFrequency);
+				fileTime = checkFileTime;
+			}
+			for(int c = 0; c < N_channel; ++c) {
+				int upperDelay = std::ceil(sampleDelays[c]);
+				int lowerDelay = std::floor(sampleDelays[c]);
+				unsigned channelInputIndexUpper = (inputIndex + upperDelay + inputBufferSize) % inputBufferSize;
+				unsigned channelInputIndexLower = (inputIndex + lowerDelay + inputBufferSize) % inputBufferSize;
+				double output = 0;
+				if(upperDelay == lowerDelay)
+					output = inputBuffer[channelInputIndexUpper];
+				else
+					output = (upperDelay - sampleDelays[c]) * inputBuffer[channelInputIndexUpper] + (sampleDelays[c] - lowerDelay) * inputBuffer[channelInputIndexLower];
+				fwrite(&output, 1, sizeof(double), stdout);
+			}
+			inputIndex = (inputIndex + 1) % inputBufferSize;
 		}
 	}
 
@@ -93,14 +127,14 @@ int main(int argc, char* argv[]) {
 
 // returns sample frequency
 double calcSlownessVector(FILE* fileName, double slowness[3]) {
-	fflush(fileName);
-	rewind(fileName);
 	double sampleFrequency;
 	double slownessCheck = 0;
 	if(fileName == NULL) {
 		cerr << "Error in calcSlownessVector(FILE*,double[3]):\nInvalid signal source filename" << endl;
 		return 1;
 	} else {
+		fflush(fileName);
+		rewind(fileName);
 		fscanf(fileName, "sampleFrequency = %lf\n", &sampleFrequency);
 		if(sampleFrequency <= 0.0) {
 			cerr << "Error in calcSlownessVector(FILE*,double[3]):\nInvalid signal sample frequency" << endl;

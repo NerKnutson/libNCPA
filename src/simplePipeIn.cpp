@@ -5,7 +5,7 @@
 #include <iostream> // std::cerr std::endl;
 using namespace std;
 #ifndef SIZE
-#define SIZE 1
+#define SIZE 3
 #endif
 
 int main(int argc, char* argv[]) {
