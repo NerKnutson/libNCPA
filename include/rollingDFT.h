@@ -56,7 +56,7 @@ class rollingDFT {
 			headInput[1] = headInput[0];
 			headInput[0] = tailInput[0];
 			tailInput[0] = tailInput[1];
-			if(tailInput[1] == input + N_channel*lengthFT)
+			if(tailInput[1] == input + (N_channel*lengthFT+1))
 				tailInput[1] = input;
 			else
 				tailInput[1] += N_channel;
@@ -78,7 +78,7 @@ class rollingDFT {
 		unsigned N_channel;
 		unsigned lengthFT;
 
-		// 2nd Order Filter: each channel needs 2 points of historical data
+		// N+1 Order Filter: each channel needs N+1 points of historical data
 		S* input;
 		S* headInput[2]; // {Newest, 2nd Newest}
 		S* tailInput[2]; // {Oldest, 2nd Oldest}
