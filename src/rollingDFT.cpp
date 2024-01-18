@@ -38,11 +38,11 @@ int main(int argc, char* argv[]) {
 		roller[b] = new rollingDFT<double>(N_channel, lengthFT, binIndex);
 	}
 
-	unsigned lengthInput = 2*lengthFT;
-	double data[N_channel*lengthInput];
-	fill(data, data + 2*N_channel*lengthFT, 0.0);
+	double data[N_channel];
+	fill(data, data + N_channel, 0.0);
 	unsigned indexData = 0;
 
+<<<<<<< HEAD
 	if(humanReadable) { // Print human-readable data
 		cout << setprecision(numeric_limits<double>::digits10 + 1);
 		while(cin >> data[indexData]) {
@@ -74,6 +74,21 @@ int main(int argc, char* argv[]) {
 						else
 							cout << endl;
 					}
+=======
+	cout << setprecision(numeric_limits<double>::digits10 + 1);
+	while(cin >> data[indexData]) {
+		indexData++;
+		if(indexData%N_channel == 0) {
+			indexData = 0;
+			for(int b = 0; b < N_bin; ++b) {
+				complex<double>* rOutput = roller[b]->DFT((double*)&data);
+				for(int c = 0; c < N_channel; ++c) {
+					cout << rOutput[c];
+					if(c < N_channel - 1)
+						 cout << "\t";
+					else
+						cout << endl;
+>>>>>>> encapsulize_rollingDFT
 				}
 			}
 		}

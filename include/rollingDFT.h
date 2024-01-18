@@ -6,8 +6,7 @@
 #ifdef DEBUG
 #include <iostream> // std::cerr
 #endif
-// Note: S* input is an array of size (lengthFT + 1) * N_channel
-// It stores data from 1 sample in the past to lengthFT samples in the past
+// It stores data from 0 samples in the past to lengthFT samples in the past
 
 template <class S = double, class T = std::complex<double>>
 class rollingDFT {
@@ -21,6 +20,17 @@ class rollingDFT {
 #endif
 					return;
 				} else {
+					// N + 1 order filter
+					// Newest, 2nd Newest, 2nd Oldest, Oldest
+					input = new S[N_channel*(lengthFT + 2)];
+					std::fill(input, input + N_channel*(lengthFT + 2), 0.0);
+					headInput[0] = input + N_channel*(lengthFT + 2);
+					headInput[1] = input + N_channel*lengthFT;
+					tailInput[0] = input;
+					tailInput[1] = input + N_channel;
+
+					// 2nd Order Filter
+					// Newest, 2nd Newest
 					output = new T[2*N_channel];
 					std::fill(output, output + 2*N_channel, 0.0);
 
@@ -30,39 +40,48 @@ class rollingDFT {
 					const double arg = 2.0 * M_PI * indexBin/lengthFT;
 					const std::complex<double> j(0.0, 1.0);
 					coeffInput = exp(j * arg);
-					coeffOutput = 2 * cos(arg);
+					coeffOutput= 2 * cos(arg);
 				}
-			}
+		}
 		~rollingDFT() {
-				delete output;
-			}
-		T* DFT(const S* input, const unsigned indexHead, const unsigned lengthInput) {
-		//T* DFT(const S* headInput1, const S* headInput2, const S* tailInput1, const S* tailInput2) {
+			delete input;
+			delete output;
+		}
 
-			//for(int c = 0; c < N_channel; ++c)
-				//tailOutput[c] = calculateDFT(c, headInput1, headInput2, tailInput1, tailInput2);
+		// Expect data[N_channel]
+		T* DFT(const S* data) {
+			// Overwrite oldest N_channel samples with  most recent
+			std::copy(data, data + N_channel, tailInput[0]);
+			// Redirect headInput and tailInput appropriately
+			headInput[1] = headInput[0];
+			headInput[0] = tailInput[0];
+			tailInput[0] = tailInput[1];
+			if(tailInput[1] == input + (N_channel*lengthFT+1))
+				tailInput[1] = input;
+			else
+				tailInput[1] += N_channel;
+
+			// Overwrite oldest N_channel output with  most recent
 			for(int c = 0; c < N_channel; ++c)
-				tailOutput[c] = calculateDFT(c,
-					/* Newest */	&input[N_channel*indexHead],
-				/* 2nd Newest */	&input[N_channel*getIndexInRange(indexHead - 1, lengthInput)],
-					/* Oldest */	&input[N_channel*getIndexInRange(indexHead - lengthFT - 1, lengthInput)],
-				/* 2nd Oldest */	&input[N_channel*getIndexInRange(indexHead - lengthFT, lengthInput)]
-									);
+				tailOutput[c] = calculateDFT(c);
 
 			// Update head to newest output sample
-			if(headOutput == output) {
-				headOutput = tailOutput;
+			headOutput = tailOutput;
+			if(tailOutput == output + N_channel)
 				tailOutput = output;
-			}
-			else {
-				tailOutput = headOutput;
-				headOutput = output;
-			}
+			else
+				tailOutput += N_channel;
+
 			return headOutput;
 		}
 	private:
 		unsigned N_channel;
 		unsigned lengthFT;
+
+		// N+1 Order Filter: each channel needs N+1 points of historical data
+		S* input;
+		S* headInput[2]; // {Newest, 2nd Newest}
+		S* tailInput[2]; // {Oldest, 2nd Oldest}
 
 		// 2nd Order Filter: each channel needs 2 points of historical data
 		T* output;
@@ -72,18 +91,15 @@ class rollingDFT {
 		std::complex<double> coeffInput;
 		double coeffOutput;
 
-		T calculateDFT(const unsigned channel, const S* headInput1, const S* headInput2, const S* tailInput1, const S* tailInput2) {
+		T calculateDFT(const unsigned channel) {
 			// Calculate updated SDFT value
 			T value = coeffOutput * headOutput[channel] - tailOutput[channel];
 
-			value += coeffInput * (headInput1[channel] - tailInput2[channel]);
+			value += coeffInput * (headInput[0][channel] - tailInput[1][channel]);
 
-			value +=  tailInput1[channel] - headInput2[channel];
+			value +=  tailInput[0][channel] - headInput[1][channel];
 
 			return value;
-		}
-		unsigned getIndexInRange(const int index, const unsigned lengthBuffer) {
-			return (index + lengthBuffer) % lengthBuffer;
 		}
 };
 #endif
