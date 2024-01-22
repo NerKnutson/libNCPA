@@ -9,116 +9,65 @@
 #include <fftw3.h>
 #include <algorithm> //std::transform()
 
-// FFT N_channel of real data
-
-template <class S, class T>
+// FFT and inverse FFT of N_channel of lengthFT of real data
+// S refers to the input <double> or <std::complex<double>>
+template <class S>
 class fastFT {
 	public:
 		fastFT(int N_channel, int lengthFT):
 			N_channel(N_channel),
 			lengthFT(lengthFT) {
-			fastFT(this, N_channel, lengthFT);
+			int N_bin = lengthFT/2 + 1;
+
+			realData = (double*) fftw_alloc_real(lengthFT*N_channel);
+			complexData = (std::complex<double>*) fftw_alloc_complex(N_bin*N_channel);
+
+			std::fill(realData, realData + lengthFT*N_channel, 0.0);
+			std::fill(complexData, complexData + N_bin*N_channel, 0.0);
+
+			plan = selectPlan(this);
 		}
 		~fastFT() {
-			fftw_destroy_plan(bigPlan);
-			fftw_free(rawInput);
-			fftw_free(rawOutput);
+			fftw_free(realData);
+			fftw_free(complexData);
+			fftw_destroy_plan(plan);
 		}
 
-		template<typename T1>
-		bool convertData(const T1& data) {
-			std::transform(data, data + N_channel * lengthFT, rawInput, static_cast_func());
-			return true;
+		void FFT() {
+			buffer_lock.lock();
+			fftw_execute(plan);
+			buffer_lock.unlock();
 		}
 
-		bool FFT() {
-			buffer_lock.lock();
-			fftw_execute(bigPlan);
-			buffer_lock.unlock();
-			return true;
-		}
-		bool FFT(double freshInput[]) {
-			memcpy(rawInput, freshInput, N_channel * lengthFT * sizeof(double));
-			buffer_lock.lock();
-			fftw_execute(bigPlan);
-			buffer_lock.unlock();
-			return true;
-		}
-		bool FFT(std::complex<double> freshInput[]) {
-			memcpy(rawInput, freshInput, N_channel * (lengthFT/2 + 1) * sizeof(std::complex<double>));
-			buffer_lock.lock();
-			fftw_execute(bigPlan);
-			buffer_lock.unlock();
-			return true;
-		}
-		bool FFT(int freshInput[]) {
-			convertData(freshInput);
-			buffer_lock.lock();
-			fftw_execute(bigPlan);
-			buffer_lock.unlock();
-			return true;
-		}
-		bool FFT(std::complex<int> freshInput[]) {
-			convertData(freshInput);
-			buffer_lock.lock();
-			fftw_execute(bigPlan);
-			buffer_lock.unlock();
-			return true;
-		}
-
-		S* rawInput;
-		T* rawOutput;
+		double* realData;
+		std::complex<double>* complexData;
 
 	private:
-		fftw_plan bigPlan;
+		fftw_plan plan;
+
+		fftw_plan selectPlan(fastFT<double>* selection) {
+			return fftw_plan_many_dft_r2c(1, &lengthFT, N_channel,
+						realData, NULL,
+						N_channel, 1,
+						(double (*)[2]) complexData, NULL,
+						N_channel, 1,
+						FFTW_ESTIMATE
+					);
+		}
+		fftw_plan selectPlan(fastFT<std::complex<double>>* selection) {
+			return fftw_plan_many_dft_c2r(1, &lengthFT, N_channel,
+						(double (*)[2]) complexData, NULL,
+						N_channel, 1,
+						realData, NULL,
+						N_channel, 1,
+						FFTW_ESTIMATE
+					);
+		}
 
 		const int N_channel;
 		const int lengthFT;
 
 		std::mutex buffer_lock;
-
-		fastFT(fastFT<double, std::complex<double>>* r2c, int N_channel, int lengthFT):
-			N_channel(N_channel),
-			lengthFT(lengthFT) {
-				int N_bin = lengthFT/2 + 1;
-
-				r2c->rawInput = (S*) fftw_alloc_real(lengthFT*N_channel);
-				r2c->rawOutput = (T*) fftw_alloc_complex(N_bin*N_channel);
-
-				std::fill(r2c->rawInput, r2c->rawInput + lengthFT*N_channel, 0.0);
-				std::fill(r2c->rawOutput, r2c->rawOutput + N_bin*N_channel, 0.0);
-
-				r2c->bigPlan
-					= fftw_plan_many_dft_r2c(1, &lengthFT, N_channel,
-							r2c->rawInput, NULL,
-							N_channel, 1,
-							(double (*)[2]) r2c->rawOutput, NULL,
-							N_channel, 1,
-							FFTW_ESTIMATE);
-		}
-		fastFT(fastFT<std::complex<double>, double>* c2r, int N_channel, int lengthFT):
-			N_channel(N_channel),
-			lengthFT(lengthFT) {
-				int N_bin = lengthFT/2 + 1;
-
-				c2r->rawInput = (S*) fftw_alloc_complex(N_bin*N_channel);
-				c2r->rawOutput = (T*) fftw_alloc_real(lengthFT*N_channel);
-
-				std::fill(c2r->rawInput, c2r->rawInput + N_bin*N_channel, 0.0);
-				std::fill(c2r->rawOutput, c2r->rawOutput + lengthFT*N_channel, 0.0);
-
-				c2r->bigPlan
-					= fftw_plan_many_dft_c2r(1, &lengthFT, N_channel,
-							(double (*)[2]) c2r->rawInput, NULL,
-							N_channel, 1,
-							c2r->rawOutput, NULL,
-							N_channel, 1,
-							FFTW_ESTIMATE);
-		}
-
-		struct static_cast_func { // use this in the converstion from any type to correct input type
-			template <typename T1> S operator()(const T1& x) const{ return static_cast<S>(x); }
-		}; //std::transform(begin_input, end_input, output, static_cast_func<TYPE>());
 };
 
 #endif

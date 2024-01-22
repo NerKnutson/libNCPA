@@ -30,27 +30,29 @@ int main(int argc, char* argv[]) {
 	}
 
 	unsigned indexBin[N_bin];
-	for(int b = argc - N_bin; b < argc; ++b) {
-		indexBin[b] = stoi(argv[b]);
+	for(int arg = argc - N_bin; arg < argc; ++arg) {
+		int b = arg - argc + N_bin;
+		indexBin[b] = stoi(argv[arg]);
 		if(indexBin[b] < 0 || 2 * indexBin[b] > lengthFT) {
 			cerr << "Error in " << argv[0] << ":\nInvalid bin index" << endl;
 			return 1;
 		}
 	}
 
-	fastFT<double, complex<double>> r2cFFT(N_channel, lengthFT);
+	fastFT<double> r2cFFT(N_channel, lengthFT);
 	unsigned indexData = 0;
 
 	if(humanReadable) { // Print human-readable data
 		cout << setprecision(numeric_limits<double>::digits10 + 1);
-		while(cin >> r2cFFT.rawInput[indexData]) {
+		while(cin >> r2cFFT.realData[indexData]) {
 			indexData++;
 			if(indexData == N_channel*lengthFT) {
+				indexData = 0;
 				r2cFFT.FFT();
 				if(N_bin > 0) {
 					for(int b = 0; b < N_bin; ++b) {
 						for(int c = 0; c < N_channel; ++c) {
-							cout << r2cFFT.rawOutput[c + N_channel*indexBin[b]];;
+							cout << r2cFFT.complexData[c + N_channel*indexBin[b]];;
 							if(c < N_channel - 1)
 								cout << "\t";
 							else
@@ -60,7 +62,7 @@ int main(int argc, char* argv[]) {
 				} else { // Display all frequency bins
 					for(int f = 0; f < lengthFT/2 + 1; ++f) {
 						for(int c = 0; c < N_channel; ++c) {
-							cout << r2cFFT.rawOutput[c + N_channel*f];
+							cout << r2cFFT.complexData[c + N_channel*f];
 							if(c < N_channel - 1)
 								cout << "\t";
 							else
@@ -68,15 +70,22 @@ int main(int argc, char* argv[]) {
 						}
 					}
 				}
-				indexData = 0;
 			}
 		}
 	} else { // Print binary representation
 		unsigned sizeInput = N_channel*lengthFT;
 		unsigned sizeOutput = N_channel*(lengthFT/2 + 1);
-		while(fread(r2cFFT.rawInput, sizeInput, sizeof(double), stdin)) {
-			r2cFFT.FFT();
-			fwrite(r2cFFT.rawOutput, sizeOutput, sizeof(std::complex<double>), stdout);
+		if(N_bin > 0) {
+			while(fread(r2cFFT.realData, sizeInput, sizeof(double), stdin)) {
+				r2cFFT.FFT();
+				for(int b = 0; b < N_bin; ++b)
+					fwrite(&r2cFFT.complexData[N_channel*indexBin[b]], sizeOutput, sizeof(std::complex<double>), stdout);
+			}
+		} else {
+			while(fread(r2cFFT.realData, sizeInput, sizeof(double), stdin)) {
+				r2cFFT.FFT();
+				fwrite(r2cFFT.complexData, sizeOutput, sizeof(std::complex<double>), stdout);
+			}
 		}
 	}
 

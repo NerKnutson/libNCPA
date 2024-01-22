@@ -33,18 +33,18 @@ int main(int argc, char* argv[]) {
 	vector<rollingDFT<double, complex<double>>> roller;
 	roller.reserve(N_bin);
 	for(int b = argc - N_bin; b < argc; ++b) {
-		unsigned binIndex = stoi(argv[b]);
-		if(binIndex < 0 || 2 * binIndex > lengthFT) {
+		unsigned indexBin = stoi(argv[b]);
+		if(indexBin < 0 || 2 * indexBin > lengthFT) {
 			cerr << "Error in " << argv[0] << ":\nInvalid bin index" << endl;
 			return 1;
 		}
-		roller.push_back(rollingDFT<double, complex<double>>(N_channel, lengthFT, binIndex));
+		roller.push_back(rollingDFT<double, complex<double>>(N_channel, lengthFT, indexBin));
 	}
 
 	double data[N_channel];
 	fill(data, data + N_channel, 0.0);
 
-	if(humanReadable) {
+	if(humanReadable) { // Print human-readable data
 		cout << setprecision(numeric_limits<double>::digits10 + 1);
 		unsigned indexData = 0;
 		while(cin >> data[indexData]) {
