@@ -11,6 +11,7 @@
 template <class S = double, class T = std::complex<double>>
 class rollingDFT {
 	public:
+		// Constructor
 		rollingDFT(unsigned N_channel, unsigned lengthFT, unsigned indexBin):
 			N_channel(N_channel),
 			lengthFT(lengthFT) {
@@ -43,9 +44,37 @@ class rollingDFT {
 					coeffOutput= 2 * cos(arg);
 				}
 		}
+
+		// Copy Constructor
+		rollingDFT(const rollingDFT& other) {
+			this->N_channel = other.N_channel;
+			this->lengthFT = other.lengthFT;
+			// N + 1 order filter
+			// Newest, 2nd Newest, 2nd Oldest, Oldest
+			delete this->input;
+			delete this->output;
+
+			this->input = new S[N_channel*(lengthFT + 2)];
+			std::copy(other.input, other.input + N_channel*(lengthFT + 2), this->input);
+			headInput[0] = this->input + N_channel*(lengthFT + 2);
+			headInput[1] = this->input + N_channel*lengthFT;
+			tailInput[0] = this->input;
+			tailInput[1] = this->input + N_channel;
+
+			// 2nd Order Filter
+			// Newest, 2nd Newest
+			this->output = new T[2*N_channel];
+			std::copy(other.output, other.output + 2*N_channel, this->output);
+
+			headOutput = this->output;
+			tailOutput = this->output + N_channel;
+
+			this->coeffInput = other.coeffInput;
+			this->coeffOutput = other.coeffOutput;
+		}
 		~rollingDFT() {
-			delete input;
-			delete output;
+			delete[] input;
+			delete[] output;
 		}
 
 		// Expect data[N_channel]
@@ -56,7 +85,7 @@ class rollingDFT {
 			headInput[1] = headInput[0];
 			headInput[0] = tailInput[0];
 			tailInput[0] = tailInput[1];
-			if(tailInput[1] == input + (N_channel*lengthFT+1))
+			if(tailInput[1] == input + N_channel*(lengthFT + 1))
 				tailInput[1] = input;
 			else
 				tailInput[1] += N_channel;

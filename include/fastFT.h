@@ -21,7 +21,6 @@ class fastFT {
 		}
 		~fastFT() {
 			fftw_destroy_plan(bigPlan);
-
 			fftw_free(rawInput);
 			fftw_free(rawOutput);
 		}

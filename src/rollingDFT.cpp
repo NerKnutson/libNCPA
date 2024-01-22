@@ -1,17 +1,19 @@
 #include <iostream> // std::cerr std::cout
 #include <iomanip> // std::setprecision()
 #include <cstring> // std::strcmp(char*,char*)
+#include <vector>
 #include "../include/rollingDFT.h"
 using namespace std;
 
 int main(int argc, char* argv[]) {
-	if(argc < 6){
+	if(argc < 5){
 		cerr << "Usage: " << argv[0] << " --N_channel <number of channels> --lengthFT <length of Fourier Transform> [optional: --humanReadable] <bin indices>"  << endl;
 		return 1;
 	}
 	unsigned N_channel = 0;
 	unsigned lengthFT = 0;
 	unsigned N_bin = argc - 5;
+	bool humanReadable = false;
 
 	for(int arg = 0; arg < argc; ++arg) {
 		if(strcmp(argv[arg], "--N_channel") == 0 || strcmp(argv[arg], "-Nc") == 0)
@@ -19,8 +21,8 @@ int main(int argc, char* argv[]) {
 		else if(strcmp(argv[arg], "--lengthFT") == 0 || strcmp(argv[arg], "-lFT") == 0)
 			sscanf(argv[arg + 1], "%d", &lengthFT);
 		else if(strcmp(argv[arg], "--humanReadable") == 0 || strcmp(argv[arg], "-hR") == 0) {
-			N_bin = argc - 6;
 			humanReadable = true;
+			N_bin = argc - 6;
 		}
 	}
 	if(N_channel <= 0 || lengthFT <= 0) {
@@ -28,28 +30,29 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
-	rollingDFT<double>* roller[N_bin];
-	for(int b = 0; b < N_bin; ++b) {
-		unsigned binIndex = stoi(argv[b + 5]);
+	vector<rollingDFT<double, complex<double>>> roller;
+	roller.reserve(N_bin);
+	for(int b = argc - N_bin; b < argc; ++b) {
+		unsigned binIndex = stoi(argv[b]);
 		if(binIndex < 0 || 2 * binIndex > lengthFT) {
 			cerr << "Error in " << argv[0] << ":\nInvalid bin index" << endl;
 			return 1;
 		}
-		roller[b] = new rollingDFT<double>(N_channel, lengthFT, binIndex);
+		roller.push_back(rollingDFT<double, complex<double>>(N_channel, lengthFT, binIndex));
 	}
 
 	double data[N_channel];
 	fill(data, data + N_channel, 0.0);
-	unsigned indexData = 0;
 
-<<<<<<< HEAD
-	if(humanReadable) { // Print human-readable data
+	if(humanReadable) {
 		cout << setprecision(numeric_limits<double>::digits10 + 1);
+		unsigned indexData = 0;
 		while(cin >> data[indexData]) {
-			indexData = (indexData + 1) % (2*N_channel*lengthFT);
+			indexData++;
 			if(indexData%N_channel == 0) {
+				indexData = 0;
 				for(int b = 0; b < N_bin; ++b) {
-					complex<double>* rOutput = roller[b]->DFT((double*)&data, (indexData/N_channel - 1 + lengthInput) % lengthInput, (2*lengthFT));
+					complex<double>* rOutput = roller[b].DFT((double*)data);
 					for(int c = 0; c < N_channel; ++c) {
 						cout << rOutput[c];
 						if(c < N_channel - 1)
@@ -61,41 +64,15 @@ int main(int argc, char* argv[]) {
 			}
 		}
 	} else {
-		while(cin >> data[indexData]) {
-		while(fread(r2cFFT.rawInput, sizeInput, sizeof(double), stdin)) {
-			indexData = (indexData + 1) % (2*N_channel*lengthFT);
-			if(indexData%N_channel == 0) {
-				for(int b = 0; b < N_bin; ++b) {
-					complex<double>* rOutput = roller[b]->DFT((double*)&data, (indexData/N_channel - 1 + lengthInput) % lengthInput, (2*lengthFT));
-					for(int c = 0; c < N_channel; ++c) {
-						cout << rOutput[c];
-						if(c < N_channel - 1)
-							 cout << "\t";
-						else
-							cout << endl;
-					}
-=======
-	cout << setprecision(numeric_limits<double>::digits10 + 1);
-	while(cin >> data[indexData]) {
-		indexData++;
-		if(indexData%N_channel == 0) {
-			indexData = 0;
+		while(fread(data, N_channel, sizeof(double), stdin)) {
 			for(int b = 0; b < N_bin; ++b) {
-				complex<double>* rOutput = roller[b]->DFT((double*)&data);
-				for(int c = 0; c < N_channel; ++c) {
-					cout << rOutput[c];
-					if(c < N_channel - 1)
-						 cout << "\t";
-					else
-						cout << endl;
->>>>>>> encapsulize_rollingDFT
-				}
+				complex<double>* rOutput = roller[b].DFT((double*)&data);
+				fwrite(rOutput, N_channel, sizeof(std::complex<double>), stdout);
 			}
 		}
 	}
 
-	for(int b = 0; b < N_bin; ++b)
-		delete(roller[b]);
+	roller.clear();
 
 	return 0;
 }

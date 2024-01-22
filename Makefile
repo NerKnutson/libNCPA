@@ -1,6 +1,6 @@
 INSTALL_PREFIX?=/usr/local
 
-CFLAGS=-DMAX_CHANNELS=128 -O3
+CFLAGS=-DMAX_CHANNELS=128
 LDLIBS=-liir -lfftw3
 #INCLUDE=-I $(LIBUSB_PREFIX)/include/libusb-1.0
 #UNAME := $(shell uname)

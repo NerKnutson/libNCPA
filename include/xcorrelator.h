@@ -23,8 +23,8 @@ class xcorrelator {
 			}
 
 		~xcorrelator() {
-			delete FFT;
-			delete iFFT;
+			delete[] FFT;
+			delete[] iFFT;
 		}
 
 		bool xcorrelate() {
