@@ -85,6 +85,7 @@ class simplePipe {
 				return -1;
 			}
 		}
+
 	private:
 		std::string fifo_filename; // FIFO file name
 		int fifo; // FIFO file reference

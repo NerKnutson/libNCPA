@@ -79,7 +79,7 @@ int main(int argc, char* argv[]) {
 			while(fread(c2rFFT.realData, sizeInput, sizeof(std::complex<double>), stdin)) {
 				c2rFFT.FFT();
 				for(int s = 0; s < N_sample; ++s)
-					fwrite(&c2rFFT.realData[N_channel*indexSample[s]], sizeOutput, sizeof(double), stdout);
+					fwrite(&c2rFFT.realData[N_channel*indexSample[s]], N_channel, sizeof(double), stdout);
 			}
 		} else {
 			while(fread(c2rFFT.realData, sizeInput, sizeof(std::complex<double>), stdin)) {

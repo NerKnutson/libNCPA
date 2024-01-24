@@ -5,7 +5,6 @@
 #include <random> // std::default_random_engine generator std::normal_distribution<double> dist(double, double)
 #include <climits> // INT_MAX
 #include <cstring> // std::strcmp(char*, char*)
-#include "../include/importArrayGeometry.h"
 using namespace std;
 
 

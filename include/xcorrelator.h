@@ -5,7 +5,7 @@
 
 // XCORR N_chan of real data
 // Raw input array needs to be of size N_chan x 2*N_samples_input
-// Zero-padding must be done before XCORR_all() is called.
+// Zero-padding must be done before xcorrelate() is called.
 // xcorrelate(double freshInput[]) receives <lengthFT> frame of data from <N_channel> channels
 // xcorrelate() performs a cross-correlation on the currently buffered data
 
@@ -16,10 +16,10 @@ class xcorrelator {
 			lengthFT(lengthFFT) {
 				int N_correlation = N_channel*(N_channel-1)/2;
 				int N_bin = lengthFT/2 + 1;
-				FFT = new fastFT<double, std::complex<double>>(N_channel, lengthFT);
-				iFFT = new fastFT<std::complex<double>, double>(N_correlation, lengthFT);
-				rawInput = FFT->rawInput;
-				rawOutput = iFFT->rawOutput;
+				FFT = new fastFT<double>(N_channel, lengthFT);
+				iFFT = new fastFT<std::complex<double>>(N_correlation, lengthFT);
+				rawInput = FFT->realData;
+				rawOutput = iFFT->realData;
 			}
 
 		~xcorrelator() {
@@ -34,24 +34,7 @@ class xcorrelator {
 				int pairNum = 0;
 				for(int c = 0; c < N_channel; ++c) {
 					for(int d = c+1; d < N_channel; ++d) {
-						iFFT->rawInput[pairNum + b*N_correlation] = FFT->rawOutput[c + b*N_channel] * std::conj(FFT->rawOutput[d + b*N_channel]);
-						pairNum++;
-					}
-				}
-			}
-			iFFT->FFT();
-			return true;
-		}
-
-		bool xcorrelate(double freshInput[]) {
-			int N_correlation = N_channel*(N_channel-1)/2;
-			memcpy(FFT->rawInput, freshInput, N_channel * lengthFT * sizeof(double));;
-			FFT->FFT();
-			int pairNum = 0;
-			for(int b = 0; b < lengthFT/2 + 1; ++b) {
-				for(int c = 0; c < N_channel; ++c) {
-					for(int d = c; d < N_channel; ++d) {
-						iFFT->rawInput[pairNum + b*N_correlation] = FFT->rawOutput[c + b*N_channel] * std::conj(FFT->rawOutput[d + b*N_channel]);
+						iFFT->complexData[pairNum + b*N_correlation] = FFT->complexData[c + b*N_channel] * std::conj(FFT->complexData[d + b*N_channel]);
 						pairNum++;
 					}
 				}
@@ -67,8 +50,8 @@ class xcorrelator {
 		double* rawInput;
 		double* rawOutput;
 	private:
-		fastFT<double,std::complex<double>>* FFT;
-		fastFT<std::complex<double>,double>* iFFT;
+		fastFT<double>* FFT;
+		fastFT<std::complex<double>>* iFFT;
 
 		const int N_channel;
 		const int lengthFT;

@@ -103,6 +103,7 @@ class rollingDFT {
 
 			return headOutput;
 		}
+
 	private:
 		unsigned N_channel;
 		unsigned lengthFT;

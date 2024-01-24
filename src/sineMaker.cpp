@@ -27,20 +27,27 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
+	unsigned sample = 0;
 	if(humanReadable) { // Print human-readable data
 		cout << setprecision(numeric_limits<double>::digits10 + 1);
-		int s = 0;
 		while(true) {
-			double tmp = sin(2 * M_PI * frequency * s / sampleFrequency);
-			cout << tmp << endl;
-			s++;
+			sample++;
+			double tmp = frequency * sample / sampleFrequency;
+			if(trunc(tmp) == tmp)
+				sample = 0;
+			tmp = sin(2 * M_PI * tmp);
+
+			cout << sin(2 * M_PI * tmp) << endl;
 		}
 	} else { // Print binary representation
-		int s = 0;
 		while(true) {
-			double tmp = sin(2 * M_PI * frequency * s / sampleFrequency);
+			sample++;
+			double tmp = frequency * sample / sampleFrequency;
+			if(trunc(tmp) == tmp)
+				sample = 0;
+			tmp = sin(2 * M_PI * tmp);
+
 			fwrite(&tmp, 1, sizeof(double), stdout);
-			s++;
 		}
 	}
 

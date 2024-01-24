@@ -45,6 +45,7 @@ class decimator {
 			return NULL;
 		}
 		unsigned decimationState;
+
 	private:
 		double* rawOutput;
 
