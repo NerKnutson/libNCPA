@@ -52,6 +52,12 @@ xcorrelator: src/xcorrelator.cpp
 signalAdd: src/signalAdd.cpp
 	$(CXX) $(CFLAGS) $(WARNING) $^ -o bin/$@ $(LDLIBS)
 
+human2binary: src/human2binary.cpp
+	$(CXX) $(CFLAGS) $(WARNING) $^ -o bin/$@ $(LDLIBS)
+
+binary2human: src/binary2human.cpp
+	$(CXX) $(CFLAGS) $(WARNING) $^ -o bin/$@ $(LDLIBS)
+
 install:
 	cp include/importArrayGeometry.h $(INSTALL_PREFIX)/include/
 	cp include/rollingDFT.h $(INSTALL_PREFIX)/include/

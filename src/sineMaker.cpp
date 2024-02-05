@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
 	for(int arg = 0; arg < argc; ++arg) {
 		if(strcmp(argv[arg], "--frequency") == 0 || strcmp(argv[arg], "-f") == 0)
 			sscanf(argv[arg + 1], "%lf", &frequency);
-		else if(strcmp(argv[arg], "--sampleFrequency") == 0 || strcmp(argv[arg], "-sR") == 0)
+		else if(strcmp(argv[arg], "--sampleFrequency") == 0 || strcmp(argv[arg], "-sF") == 0)
 			sscanf(argv[arg + 1], "%lf", &sampleFrequency);
 		else if(strcmp(argv[arg], "--humanReadable") == 0 || strcmp(argv[arg], "-hR") == 0)
 			humanReadable = true;
@@ -31,23 +31,23 @@ int main(int argc, char* argv[]) {
 	if(humanReadable) { // Print human-readable data
 		cout << setprecision(numeric_limits<double>::digits10 + 1);
 		while(true) {
-			sample++;
 			double tmp = frequency * sample / sampleFrequency;
 			if(trunc(tmp) == tmp)
 				sample = 0;
 			tmp = sin(2 * M_PI * tmp);
 
-			cout << sin(2 * M_PI * tmp) << endl;
+			cout << tmp << endl;
+			sample++;
 		}
 	} else { // Print binary representation
 		while(true) {
-			sample++;
 			double tmp = frequency * sample / sampleFrequency;
 			if(trunc(tmp) == tmp)
 				sample = 0;
 			tmp = sin(2 * M_PI * tmp);
 
 			fwrite(&tmp, 1, sizeof(double), stdout);
+			sample++;
 		}
 	}
 

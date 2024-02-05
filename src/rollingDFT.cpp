@@ -31,6 +31,11 @@ int main(int argc, char* argv[]) {
 	}
 
 	vector<rollingDFT<double, complex<double>>> roller;
+	if(N_bin == 0) {
+		cerr << "Error in " << argv[0] << ":\nSpecify at least 1 bin." << endl;
+		return 1;
+	}
+
 	roller.reserve(N_bin);
 	for(int b = argc - N_bin; b < argc; ++b) {
 		unsigned indexBin = stoi(argv[b]);

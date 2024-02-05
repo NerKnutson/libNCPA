@@ -24,7 +24,7 @@ double calcSlownessVector(FILE* fileName, double slowness[3]);
 void calcSampleDelays(double sampleDelays[], double arrayGeometry[][3], double slowness[3], unsigned N_channel, double sampleFrequency);
 
 int main(int argc, char* argv[]) {
-	if(argc != 5){
+	if(argc < 5 || argc > 6){
 		cerr << "Usage: " << argv[0] << " --arrayGeometry <array geometry filename> --signalInfo <signal information filename> [optional: --humanReadable]\n" << endl;
 		cerr << "Array Geometry File Format:\n"<< ARRAY_GEOMETRY_FMT << endl;
 		cerr << "Signal Source File Format:\n"<< SIGNAL_SOURCE_FMT << endl;

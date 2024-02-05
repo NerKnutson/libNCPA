@@ -7,7 +7,7 @@
 using namespace std;
 
 int main(int argc, char* argv[]) {
-	if(argc < 5 && argc > 8){
+	if(argc < 5 || argc > 8){
 		cerr << "Usage: " << argv[0] << " --centerFrequency <frequency (Hz)> --sampleFrequency <sampleFrequency (Hz)> [optional: --widthFrequency <frequency Hz>] [optional: --humanReadable]" << endl;
 		return 1;
 	}

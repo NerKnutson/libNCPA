@@ -52,7 +52,7 @@ int main(int argc, char* argv[]) {
 				if(N_sample > 0) {
 					for(int s = 0; s < N_sample; ++s) {
 						for(int c = 0; c < N_channel; ++c) {
-							cout << c2rFFT.realData[c + N_channel*indexSample[s]];;
+							cout << c2rFFT.realData[c + N_channel*indexSample[s]];
 							if(c < N_channel - 1)
 								cout << "\t";
 							else
@@ -76,13 +76,13 @@ int main(int argc, char* argv[]) {
 		unsigned sizeInput = N_channel*(lengthFT/2 + 1);
 		unsigned sizeOutput = N_channel*lengthFT;
 		if(N_sample > 0) {
-			while(fread(c2rFFT.realData, sizeInput, sizeof(std::complex<double>), stdin)) {
+			while(fread(c2rFFT.complexData, sizeInput, sizeof(std::complex<double>), stdin)) {
 				c2rFFT.FFT();
 				for(int s = 0; s < N_sample; ++s)
 					fwrite(&c2rFFT.realData[N_channel*indexSample[s]], N_channel, sizeof(double), stdout);
 			}
 		} else {
-			while(fread(c2rFFT.realData, sizeInput, sizeof(std::complex<double>), stdin)) {
+			while(fread(c2rFFT.complexData, sizeInput, sizeof(std::complex<double>), stdin)) {
 				c2rFFT.FFT();
 				fwrite(c2rFFT.realData, sizeOutput, sizeof(double), stdout);
 			}
