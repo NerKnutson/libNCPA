@@ -81,13 +81,14 @@ int main(int argc, char* argv[]) {
 			for(int c = 0; c < N_channel; ++c) {
 				int upperDelay = std::ceil(sampleDelays[c]);
 				int lowerDelay = std::floor(sampleDelays[c]);
-				unsigned channelInputIndexUpper = (inputIndex + upperDelay + inputBufferSize) % inputBufferSize;
-				unsigned channelInputIndexLower = (inputIndex + lowerDelay + inputBufferSize) % inputBufferSize;
+				unsigned channelInputIndexUpper = (inputIndex - upperDelay + inputBufferSize) % inputBufferSize;
+				unsigned channelInputIndexLower = (inputIndex - lowerDelay + inputBufferSize) % inputBufferSize;
 				double output = 0;
 				if(upperDelay == lowerDelay)
 					output = inputBuffer[channelInputIndexUpper];
 				else
-					output = (upperDelay - sampleDelays[c]) * inputBuffer[channelInputIndexUpper] + (sampleDelays[c] - lowerDelay) * inputBuffer[channelInputIndexLower];
+					output = (upperDelay - sampleDelays[c]) * inputBuffer[channelInputIndexLower] + (sampleDelays[c] - lowerDelay) * inputBuffer[channelInputIndexUpper];
+					//output = (upperDelay - sampleDelays[c]) * inputBuffer[channelInputIndexUpper] + (sampleDelays[c] - lowerDelay) * inputBuffer[channelInputIndexLower];
 				if(c < N_channel - 1)
 					cout << output << "\t";
 				else
@@ -108,13 +109,13 @@ int main(int argc, char* argv[]) {
 			for(int c = 0; c < N_channel; ++c) {
 				int upperDelay = std::ceil(sampleDelays[c]);
 				int lowerDelay = std::floor(sampleDelays[c]);
-				unsigned channelInputIndexUpper = (inputIndex + upperDelay + inputBufferSize) % inputBufferSize;
-				unsigned channelInputIndexLower = (inputIndex + lowerDelay + inputBufferSize) % inputBufferSize;
+				unsigned channelInputIndexUpper = (inputIndex - upperDelay + inputBufferSize) % inputBufferSize;
+				unsigned channelInputIndexLower = (inputIndex - lowerDelay + inputBufferSize) % inputBufferSize;
 				double output = 0;
 				if(upperDelay == lowerDelay)
 					output = inputBuffer[channelInputIndexUpper];
 				else
-					output = (upperDelay - sampleDelays[c]) * inputBuffer[channelInputIndexUpper] + (sampleDelays[c] - lowerDelay) * inputBuffer[channelInputIndexLower];
+					output = (upperDelay - sampleDelays[c]) * inputBuffer[channelInputIndexLower] + (sampleDelays[c] - lowerDelay) * inputBuffer[channelInputIndexUpper];
 				fwrite(&output, 1, sizeof(double), stdout);
 			}
 			inputIndex = (inputIndex + 1) % inputBufferSize;

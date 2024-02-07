@@ -40,6 +40,8 @@ class xcorrelator {
 				}
 			}
 			iFFT->FFT();
+			for(int s = 0; s < lengthFT*N_channel * (N_channel-1)/2; ++s)
+				rawOutput[s] = rawOutput[s]/(lengthFT * lengthFT);
 			return true;
 		}
 

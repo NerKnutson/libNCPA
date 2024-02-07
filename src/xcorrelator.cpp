@@ -5,7 +5,7 @@
 using namespace std;
 
 int main(int argc, char* argv[]) {
-	if(argc != 9 && argc != 5){
+	if(argc > 9 || argc < 5){
 		cerr << "Usage: " << argv[0] << " --N_channel <number of channels> --lengthFT <length of Fourier transform> [optional: --indexA <index of channel A> --indexB <index of channel B>]" << endl;
 		return 1;
 	}
