@@ -1,6 +1,12 @@
 INSTALL_PREFIX?=/usr/local
+INC_DIR=include
+SRC_DIR=src
+BIN_DIR=bin
 
-CFLAGS=-DMAX_CHANNELS=128
+SRC=$(wildcard $(SRC_DIR)/*.cpp)
+BIN=$(SRC:$(SRC_DIR)/%.cpp=$(BIN_DIR)/%)
+
+CFLAGS=-DMAX_CHANNELS=128 --std=c++20 -I$(INC_DIR)
 LDLIBS=-liir -lfftw3
 #INCLUDE=-I $(LIBUSB_PREFIX)/include/libusb-1.0
 #UNAME := $(shell uname)
@@ -17,78 +23,44 @@ LDLIBS=-liir -lfftw3
 
 all: executables
 
-executables: sineMaker noiseMaker noisePropagator simplePipeIn simplePipeOut rollingDFT decimator r2cFFT c2rFFT xcorrelator signalAdd
+executables: $(BIN)
 
-sineMaker: src/sineMaker.cpp
-	$(CXX) $(CFLAGS) $(WARNING) $^ -o bin/$@ $(LDLIBS) 
-
-noiseMaker: src/noiseMaker.cpp
-	$(CXX) $(CFLAGS) $(WARNING) $^ -o bin/$@ $(LDLIBS) 
-
-noisePropagator: src/noisePropagator.cpp
-	$(CXX) $(CFLAGS) $(WARNING) $^ -o bin/$@ $(LDLIBS)
-
-simplePipeIn: src/simplePipeIn.cpp
-	$(CXX) $(CFLAGS) $(WARNING) $^ -o bin/$@ $(LDLIBS)
-
-simplePipeOut: src/simplePipeOut.cpp
-	$(CXX) $(CFLAGS) $(WARNING) $^ -o bin/$@ $(LDLIBS)
-
-rollingDFT: src/rollingDFT.cpp
-	$(CXX) $(CFLAGS) $(WARNING) $^ -o bin/$@ $(LDLIBS)
-	
-decimator: src/decimator.cpp
-	$(CXX) $(CFLAGS) $(WARNING) $^ -o bin/$@ $(LDLIBS)
-	
-r2cFFT: src/r2cFFT.cpp
-	$(CXX) $(CFLAGS) $(WARNING) $^ -o bin/$@ $(LDLIBS)
-	
-c2rFFT: src/c2rFFT.cpp
-	$(CXX) $(CFLAGS) $(WARNING) $^ -o bin/$@ $(LDLIBS)
-	
-xcorrelator: src/xcorrelator.cpp
-	$(CXX) $(CFLAGS) $(WARNING) $^ -o bin/$@ $(LDLIBS)
-
-signalAdd: src/signalAdd.cpp
-	$(CXX) $(CFLAGS) $(WARNING) $^ -o bin/$@ $(LDLIBS)
-
-human2binary: src/human2binary.cpp
-	$(CXX) $(CFLAGS) $(WARNING) $^ -o bin/$@ $(LDLIBS)
-
-binary2human: src/binary2human.cpp
-	$(CXX) $(CFLAGS) $(WARNING) $^ -o bin/$@ $(LDLIBS)
+$(BIN_DIR)/% : $(SRC_DIR)/%.cpp
+	$(CXX) $(CFLAGS) $(WARNING) $< -o $@ $(LDLIBS)
 
 install:
-	cp include/importArrayGeometry.h $(INSTALL_PREFIX)/include/
-	cp include/rollingDFT.h $(INSTALL_PREFIX)/include/
-	cp include/simplePipe.h $(INSTALL_PREFIX)/include/
-	cp bin/sineMaker $(INSTALL_PREFIX)/bin/
-	cp bin/noiseMaker $(INSTALL_PREFIX)/bin/
-	cp bin/noisePropagator $(INSTALL_PREFIX)/bin/
-	cp bin/simplePipeIn $(INSTALL_PREFIX)/bin/
-	cp bin/simplePipeOut $(INSTALL_PREFIX)/bin/
-	cp bin/rollingDFT $(INSTALL_PREFIX)/bin/
-	cp bin/decimator $(INSTALL_PREFIX)/bin/
-	cp bin/r2cFFT $(INSTALL_PREFIX)/bin/
-	cp bin/c2rFFT $(INSTALL_PREFIX)/bin/
-	cp bin/xcorrelator $(INSTALL_PREFIX)/bin/
-	cp bin/signalAdd $(INSTALL_PREFIX)/bin/
+#	cp include/importArrayGeometry.h $(INSTALL_PREFIX)/include/
+#	cp include/rollingDFT.h $(INSTALL_PREFIX)/include/
+#	cp include/simplePipe.h $(INSTALL_PREFIX)/include/
+#	cp bin/sineMaker $(INSTALL_PREFIX)/bin/
+#	cp bin/noiseMaker $(INSTALL_PREFIX)/bin/
+#	cp bin/noisePropagator $(INSTALL_PREFIX)/bin/
+#	cp bin/rollingDFT $(INSTALL_PREFIX)/bin/
+#	cp bin/decimator $(INSTALL_PREFIX)/bin/
+#	cp bin/r2cFFT $(INSTALL_PREFIX)/bin/
+#	cp bin/c2rFFT $(INSTALL_PREFIX)/bin/
+#	cp bin/xcorrelator $(INSTALL_PREFIX)/bin/
+
+#cp bin/simplePipeIn $(INSTALL_PREFIX)/bin/
+#cp bin/simplePipeOut $(INSTALL_PREFIX)/bin/
+#cp bin/signalAdd $(INSTALL_PREFIX)/bin/
 
 uninstall:
-	rm -f $(INSTALL_PREFIX)/include/importArrayGeometry.h
-	rm -f $(INSTALL_PREFIX)/include/rollingDFT.h
-	rm -f $(INSTALL_PREFIX)/include/simplePipe.h
-	rm -f $(INSTALL_PREFIX)/bin/sineMaker
-	rm -f $(INSTALL_PREFIX)/bin/noiseMaker
-	rm -f $(INSTALL_PREFIX)/bin/noisePropagator
-	rm -f $(INSTALL_PREFIX)/bin/simplePipeIn
-	rm -f $(INSTALL_PREFIX)/bin/simplePipeOut
-	rm -f $(INSTALL_PREFIX)/bin/rollingDFT
-	rm -f $(INSTALL_PREFIX)/bin/decimator
-	rm -f $(INSTALL_PREFIX)/bin/r2cFFT
-	rm -f $(INSTALL_PREFIX)/bin/c2rFFT
-	rm -f $(INSTALL_PREFIX)/bin/xcorrelator
-	rm -f $(INSTALL_PREFIX)/bin/signalAdd
+#	rm -f $(INSTALL_PREFIX)/include/importArrayGeometry.h
+#	rm -f $(INSTALL_PREFIX)/include/rollingDFT.h
+#	rm -f $(INSTALL_PREFIX)/include/simplePipe.h
+#	rm -f $(INSTALL_PREFIX)/bin/sineMaker
+#	rm -f $(INSTALL_PREFIX)/bin/noiseMaker
+#	rm -f $(INSTALL_PREFIX)/bin/noisePropagator
+#	rm -f $(INSTALL_PREFIX)/bin/rollingDFT
+#	rm -f $(INSTALL_PREFIX)/bin/decimator
+#	rm -f $(INSTALL_PREFIX)/bin/r2cFFT
+#	rm -f $(INSTALL_PREFIX)/bin/c2rFFT
+#	rm -f $(INSTALL_PREFIX)/bin/xcorrelator
+
+#rm -f $(INSTALL_PREFIX)/bin/simplePipeIn
+#rm -f $(INSTALL_PREFIX)/bin/simplePipeOut
+#rm -f $(INSTALL_PREFIX)/bin/signalAdd
 
 clean:
 	rm -f bin/*

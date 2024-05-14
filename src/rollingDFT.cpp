@@ -1,83 +1,75 @@
 #include <iostream> // std::cerr std::cout
 #include <iomanip> // std::setprecision()
 #include <cstring> // std::strcmp(char*,char*)
-#include <vector>
-#include "../include/rollingDFT.h"
+#include <vector> // std::vector<>
+#include "transformers/rollingDFT.h"
 using namespace std;
 
 int main(int argc, char* argv[]) {
 	if(argc < 5){
-		cerr << "Usage: " << argv[0] << " --N_channel <number of channels> --lengthFT <length of Fourier Transform> [optional: --humanReadable] <bin indices>"  << endl;
+		cerr << "Usage: " << argv[0] << " --N_channels <number of channels> --lengthFT <length of Fourier Transform> [optional: --humanReadable] [optional: <bin indices>]"  << endl;
 		return 1;
 	}
-	unsigned N_channel = 0;
+	unsigned N_channels = 0;
 	unsigned lengthFT = 0;
-	unsigned N_bin = argc - 5;
+	unsigned N_bins = argc - 5;
 	bool humanReadable = false;
 
 	for(int arg = 0; arg < argc; ++arg) {
-		if(strcmp(argv[arg], "--N_channel") == 0 || strcmp(argv[arg], "-Nc") == 0)
-			sscanf(argv[arg + 1], "%d", &N_channel);
+		if(strcmp(argv[arg], "--N_channels") == 0 || strcmp(argv[arg], "-Nc") == 0)
+			sscanf(argv[arg + 1], "%d", &N_channels);
 		else if(strcmp(argv[arg], "--lengthFT") == 0 || strcmp(argv[arg], "-lFT") == 0)
 			sscanf(argv[arg + 1], "%d", &lengthFT);
 		else if(strcmp(argv[arg], "--humanReadable") == 0 || strcmp(argv[arg], "-hR") == 0) {
 			humanReadable = true;
-			N_bin = argc - 6;
+			N_bins = argc - 6;
 		}
 	}
-	if(N_channel <= 0 || lengthFT <= 0) {
+	if(N_channels <= 0 || lengthFT <= 0) {
 		cerr << "Error in " << argv[0] << ":\n Invalid command-line arguments" << endl;
 		return 1;
 	}
 
-	vector<rollingDFT<double, complex<double>>> roller;
-	if(N_bin == 0) {
-		cerr << "Error in " << argv[0] << ":\nSpecify at least 1 bin." << endl;
-		return 1;
-	}
-
-	roller.reserve(N_bin);
-	for(int b = argc - N_bin; b < argc; ++b) {
-		unsigned indexBin = stoi(argv[b]);
-		if(indexBin < 0 || 2 * indexBin > lengthFT) {
-			cerr << "Error in " << argv[0] << ":\nInvalid bin index" << endl;
-			return 1;
-		}
-		roller.push_back(rollingDFT<double, complex<double>>(N_channel, lengthFT, indexBin));
-	}
-
-	double data[N_channel];
-	fill(data, data + N_channel, 0.0);
-
-	if(humanReadable) { // Print human-readable data
-		cout << setprecision(numeric_limits<double>::digits10 + 1);
-		unsigned indexData = 0;
-		while(cin >> data[indexData]) {
-			indexData++;
-			if(indexData%N_channel == 0) {
-				indexData = 0;
-				for(int b = 0; b < N_bin; ++b) {
-					complex<double>* rOutput = roller[b].DFT((double*)data);
-					for(int c = 0; c < N_channel; ++c) {
-						cout << rOutput[c];
-						if(c < N_channel - 1)
-							 cout << "\t";
-						else
-							cout << endl;
-					}
-				}
+	unsigned indexBins[lengthFT/2 + 1];
+	if(N_bins > 0) {
+		for(int arg = argc - N_bins; arg < argc; ++arg) {
+			int b = arg - argc + N_bins;
+			indexBins[b] = stoi(argv[arg]);
+			if(indexBins[b] < 0 || 2 * indexBins[b] > lengthFT) {
+				cerr << "Error in " << argv[0] << ":\nInvalid bin index" << endl;
+				return 1;
 			}
 		}
 	} else {
-		while(fread(data, N_channel, sizeof(double), stdin)) {
-			for(int b = 0; b < N_bin; ++b) {
-				complex<double>* rOutput = roller[b].DFT((double*)&data);
-				fwrite(rOutput, N_channel, sizeof(std::complex<double>), stdout);
+		N_bins = lengthFT/2 + 1;
+		for(int b = 0; b < N_bins; ++b)
+			indexBins[b] = b;
+	}
+	rollingDFT<double, std::complex<double>> roller(N_channels, lengthFT, std::span(indexBins, N_bins));
+
+	if(humanReadable) { // Print human-readable data
+		cout << setprecision(numeric_limits<double>::digits10 + 1);
+		while(roller.read(std::cin) > 0) {
+			if(!roller.transform()) {
+				cerr << "Error in " << argv[0] << ":\n failed to transform." << endl;
+				return 1;
+			}
+			if(roller.write(std::cout) < 0) {
+				cerr << "Error in " << argv[0] << ":\n failed to write." << endl;
+				return 1;
+			}
+		}
+	} else { // Print binary representation
+		while(roller.read(stdin) > 0) {
+			if(!roller.transform()) {
+				cerr << "Error in " << argv[0] << ":\n failed to transform." << endl;
+				return 1;
+			}
+			if(roller.write(stdout) < 0) {
+				cerr << "Error in " << argv[0] << ":\n failed to write." << endl;
+				return 1;
 			}
 		}
 	}
-
-	roller.clear();
-
 	return 0;
 }

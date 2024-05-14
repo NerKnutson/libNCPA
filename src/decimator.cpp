@@ -1,15 +1,14 @@
 #include <iostream> // std::cerr std::cout
-#include <iomanip> // std::setprecision()
 #include <cstring> // std::strcmp(char*,char*)
-#include "../include/decimator.h" // decimator(double[],int,int,double,double,double,double[])
+#include "transformers/decimator.h" // decimator(int,int,double,double,double)
 using namespace std;
 
 int main(int argc, char* argv[]) {
 	if(argc != 11 && argc !=12){
-		cerr << "Usage: " << argv[0] << " --N_channel <number of channels> --decimationFactor <decimation factor> --sampleFrequency <sample frequency (Hz)> --cutoffFrequency <cut off frequency (Hz)> --stopbandRipple <stopband ripple (dB)> [optional: --humanReadable]"  << endl;
+		cerr << "Usage: " << argv[0] << " --N_channels <number of channels> --decimationFactor <decimation factor> --sampleFrequency <sample frequency (Hz)> --cutoffFrequency <cut off frequency (Hz)> --stopbandRipple <stopband ripple (dB)> [optional: --humanReadable]"  << endl;
 		return 1;
 	}
-	int N_channel = 0;
+	int N_channels = 0;
 	double decimationFactor = 0;
 	double sampleFrequency = 0;
 	double cutoffFrequency = 0;
@@ -17,8 +16,8 @@ int main(int argc, char* argv[]) {
 	bool humanReadable = false;
 
 	for(int arg = 0; arg < argc; ++arg) {
-		if(strcmp(argv[arg], "--N_channel") == 0 || strcmp(argv[arg], "-Nc") == 0)
-			sscanf(argv[arg + 1], "%d", &N_channel);
+		if(strcmp(argv[arg], "--N_channels") == 0 || strcmp(argv[arg], "-Nc") == 0)
+			sscanf(argv[arg + 1], "%d", &N_channels);
 		else if(strcmp(argv[arg], "--decimationFactor") == 0 || strcmp(argv[arg], "-dF") == 0)
 			sscanf(argv[arg + 1], "%lf", &decimationFactor);
 		else if(strcmp(argv[arg], "--sampleFrequency") == 0 || strcmp(argv[arg], "-sF") == 0)
@@ -36,40 +35,36 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
-	if(N_channel < 0) {
+	if(N_channels < 0) {
 		cerr << "Error in " << argv[0] << ":\nInvalid number of channels" << endl;
 		return 1;
 	}
 
 	int indexData = 0;
-	double inputBuffer[N_channel];
-	decimator DECIMATOR(N_channel, decimationFactor, sampleFrequency, cutoffFrequency, stopbandRipple);
+	double inputBuffer[N_channels];
+	decimator<double, double> DECIMATOR(N_channels, decimationFactor, sampleFrequency, cutoffFrequency, stopbandRipple);
 
 	if(humanReadable) { // Print human-readable data
-		cout << setprecision(numeric_limits<double>::digits10 + 1);
-		while(cin >> inputBuffer[indexData]) {
-			indexData++;
-			if(indexData % N_channel == 0) {
-				indexData = 0;
-				double* outputDecimator = DECIMATOR.decimate(inputBuffer);
-				if(outputDecimator != NULL) {
-					for(int c = 0; c < N_channel; ++c) {
-						if(c < N_channel - 1)
-							cout << outputDecimator[c] << "\t";
-						else
-							cout << outputDecimator[c] << endl;
-					}
-				} else
-					continue;
+		while(DECIMATOR.read(std::cin)){
+			if(!DECIMATOR.transform()) {
+				cerr << "Error in " << argv[0] << ":\n failed to transform." << endl;
+				return 1;
+			}
+			if(DECIMATOR.write(std::cout) < 0) {
+				cerr << "Error in " << argv[0] << ":\n failed to write." << endl;
+				return 1;
 			}
 		}
 	} else { // Print binary representation
-		while(fread(inputBuffer, N_channel, sizeof(double), stdin) ) {
-			double* outputDecimator = DECIMATOR.decimate(inputBuffer);
-			if(outputDecimator != NULL) {
-				fwrite(outputDecimator, N_channel, sizeof(double), stdout);
-			} else
-				continue;
+		while(DECIMATOR.read(stdin)){
+			if(!DECIMATOR.transform()) {
+				cerr << "Error in " << argv[0] << ":\n failed to transform." << endl;
+				return 1;
+			}
+			if(DECIMATOR.write(stdout) < 0) {
+				cerr << "Error in " << argv[0] << ":\n failed to write." << endl;
+				return 1;
+			}
 		}
 	}
 
