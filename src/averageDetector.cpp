@@ -6,8 +6,8 @@
 using namespace std;
 
 int main(int argc, char* argv[]) {
-	if(argc < 7 || argc > 11){
-		cerr << "Usage: " << argv[0] << " --N_channels <number of channels> --shortLength <length of short term average> --longLength <length of long term average> [optional: --ratio <ratio of short term average to long term average to trigger>] [optional: --humanReadable] [optional: --timeStamp]" << endl;
+	if(argc < 7 || argc > 12){
+		cerr << "Usage: " << argv[0] << " --N_channels <number of channels> --shortLength <length of short term average> --longLength <length of long term average> [optional: --ratio <ratio of short term average to long term average to trigger>] [optional: --humanReadable] [optional: --timeStamp] [optional: --absoluteReference]" << endl;
 		return 1;
 	}
 
@@ -17,6 +17,7 @@ int main(int argc, char* argv[]) {
 	double ratio = 1.0;
 	bool humanReadable = false;
 	bool timeStamp = false;
+	bool absoluteReference = false;
 
 	for(int arg = 0; arg < argc; ++arg) {
 		if(strcmp(argv[arg], "--N_channels") == 0 || strcmp(argv[arg], "-Nc") == 0)
@@ -31,6 +32,8 @@ int main(int argc, char* argv[]) {
 			humanReadable = true;
 		else if(strcmp(argv[arg], "--timeStamp") == 0 || strcmp(argv[arg], "-tS") == 0)
 			timeStamp = true;
+		else if(strcmp(argv[arg], "--absoluteReference") == 0 || strcmp(argv[arg], "-aR") == 0)
+			absoluteReference = true;
 	}
 	if(shortLength == 0 || longLength == 0) {
 		cerr << "Error in " << argv[0] << ":\n Invalid buffer size(s)" << endl;
@@ -38,6 +41,8 @@ int main(int argc, char* argv[]) {
 	}
 	averageDetector<double> detector(N_channels, shortLength, longLength, ratio);
 	timeStamper stamp(N_channels);
+	if(absoluteReference)
+		stamp.referenceTick = 0;
 	if(timeStamp)
 		stamp.input.steal(detector.output);
 

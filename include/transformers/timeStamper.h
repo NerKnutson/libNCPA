@@ -15,11 +15,15 @@
 
 class timeStamper : public transformer<bool,unsigned long> {
 	public:
-		timeStamper(size_t numberChannels):
+		timeStamper(size_t numberChannels): // time stamp relative to start
 		transformer<bool,unsigned long>(numberChannels) {
 			const auto now = std::chrono::system_clock::now();
 			const auto duration = now.time_since_epoch();
 			referenceTick = duration.count();
+		}
+		timeStamper(size_t numberChannels, unsigned long reference): //time stamp relative to a given reference
+		transformer<bool,unsigned long>(numberChannels) {
+			referenceTick = reference;
 		}
 		bool transform() {
 			const auto now = std::chrono::system_clock::now();
@@ -37,8 +41,9 @@ class timeStamper : public transformer<bool,unsigned long> {
 			this->bufferLock.unlock();
 			return true;
 		}
-	private:
+
 		unsigned long referenceTick;
+	private:
 };
 
 #endif

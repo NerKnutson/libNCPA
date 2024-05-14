@@ -6,8 +6,8 @@
 using namespace std;
 
 int main(int argc, char* argv[]) {
-	if(argc < 5 || argc > 7){
-		cerr << "Usage: " << argv[0] << " --N_channels <number of channels> --threshold <triggering mechanism (data > threshold)> [optional: --humanReadable] [optional: --timeStamp]" << endl;
+	if(argc < 5 || argc > 8){
+		cerr << "Usage: " << argv[0] << " --N_channels <number of channels> --threshold <triggering mechanism (data > threshold)> [optional: --humanReadable] [optional: --timeStamp] [optional: --absoluteReference]" << endl;
 		return 1;
 	}
 
@@ -15,6 +15,7 @@ int main(int argc, char* argv[]) {
 	double threshold = 1.0;
 	bool humanReadable = false;
 	bool timeStamp = false;
+	bool absoluteReference = false;
 
 	for(int arg = 0; arg < argc; ++arg) {
 		if(strcmp(argv[arg], "--N_channels") == 0 || strcmp(argv[arg], "-Nc") == 0)
@@ -25,10 +26,14 @@ int main(int argc, char* argv[]) {
 			humanReadable = true;
 		else if(strcmp(argv[arg], "--timeStamp") == 0 || strcmp(argv[arg], "-tS") == 0)
 			timeStamp = true;
+		else if(strcmp(argv[arg], "--absoluteReference") == 0 || strcmp(argv[arg], "-aR") == 0)
+			absoluteReference = true;
 	}
 
 	simpleDetector<double> detector(N_channels, threshold);
 	timeStamper stamp(N_channels);
+	if(absoluteReference)
+		stamp.referenceTick = 0;
 	if(timeStamp)
 		stamp.input.steal(detector.output);
 

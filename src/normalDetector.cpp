@@ -6,8 +6,8 @@
 using namespace std;
 
 int main(int argc, char* argv[]) {
-	if(argc < 7 || argc > 9){
-		cerr << "Usage: " << argv[0] << " --N_channels <number of channels> --learningRate <rate for learning mean and variance (0 < r < 1)> --pValue <p-value for hypothesis test (0 < p < 1)> [optional: --humanReadable] [optional: --timeStamp]" << endl;
+	if(argc < 7 || argc > 10){
+		cerr << "Usage: " << argv[0] << " --N_channels <number of channels> --learningRate <rate for learning mean and variance (0 < r < 1)> --pValue <p-value for hypothesis test (0 < p < 1)> [optional: --humanReadable] [optional: --timeStamp] [optional: --absoluteReference]" << endl;
 		return 1;
 	}
 
@@ -16,6 +16,7 @@ int main(int argc, char* argv[]) {
 	double pValue = 1.0;
 	bool humanReadable = false;
 	bool timeStamp = false;
+	bool absoluteReference = false;
 
 	for(int arg = 0; arg < argc; ++arg) {
 		if(strcmp(argv[arg], "--N_channels") == 0 || strcmp(argv[arg], "-Nc") == 0)
@@ -28,10 +29,14 @@ int main(int argc, char* argv[]) {
 			humanReadable = true;
 		else if(strcmp(argv[arg], "--timeStamp") == 0 || strcmp(argv[arg], "-tS") == 0)
 			timeStamp = true;
+		else if(strcmp(argv[arg], "--absoluteReference") == 0 || strcmp(argv[arg], "-aR") == 0)
+			absoluteReference = true;
 	}
 
 	normalDetector<double> detector(N_channels, learningRate, pValue);
 	timeStamper stamp(N_channels);
+	if(absoluteReference)
+		stamp.referenceTick = 0;
 	if(timeStamp) // Share buffer if timeStamp flag
 		stamp.input.steal(detector.output);
 
