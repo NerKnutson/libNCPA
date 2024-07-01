@@ -23,6 +23,9 @@ executables: $(BIN)
 $(BIN_DIR)/% : $(SRC_DIR)/%.cpp
 	$(CXX) $(CFLAGS) $(WARNING) $< -o $@
 
+$(BIN_DIR)/d2cCalculator : $(SRC_DIR)/d2cCalculator.cpp
+	$(CXX) $(CFLAGS) $(WARNING) $< -o $@ -larmadillo
+
 $(BIN_DIR)/decimator : $(SRC_DIR)/decimator.cpp
 	$(CXX) $(CFLAGS) $(WARNING) $< -o $@ -liir
 

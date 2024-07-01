@@ -40,8 +40,6 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
-	int indexData = 0;
-	double inputBuffer[N_channels];
 	decimator<double, double> DECIMATOR(N_channels, decimationFactor, sampleFrequency, cutoffFrequency, stopbandRipple);
 
 	if(humanReadable) { // Print human-readable data
