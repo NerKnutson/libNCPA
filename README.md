@@ -4,42 +4,6 @@ Useful utilities and libraries for acoustics work
 # Important Note:
 This was compiled and installed on an x86 Linux installation. Specifically, on Void Linux:
 https://voidlinux.org/
-You should be able to play around with the examples in bin and the headers in include without performing a full install.
-
-# Dependencies
-These are dependencies for some of the transformers in this library.
-
-
-http://fftw.org/
-
-https://github.com/berndporr/iir1
-
-https://arma.sourceforge.net/docs.html
-
-
-If using Void Linux, simply
-```
-sudo xbps-install -Su fftw-devel libiir1-devel armadillo-devel
-```
-
-Otherwise, follow the instructions to install from source.
-Be sure to append the following to your bashrc or other startup script if installing from source:
-```
-export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
-```
-Or run the executables as
-```
-LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH <EXECUTABLE> <...>
-```
-
-# Compiling
-```
-make
-```
-# Installing
-```
-sudo make install
-```
 
 # Running Container
 For users not using Void Linux, it is recommended that you use the ContainerFile to utilize this library.
@@ -83,6 +47,41 @@ cat <DATA> | docker run -i void-ncpa sh -c '<COMMANDS>'
 xstream <OPTIONS> | docker run -i void-ncpa sh -c '<COMMANDS>'
 ```
 
+# Dependencies
+These are dependencies for some of the transformers in this library.
+
+
+http://fftw.org/
+
+https://github.com/berndporr/iir1
+
+https://arma.sourceforge.net/docs.html
+
+
+If using Void Linux, simply
+```
+sudo xbps-install -Su fftw-devel libiir1-devel armadillo-devel
+```
+
+Otherwise, follow the instructions to install from source.
+Be sure to append the following to your bashrc or other startup script if installing from source:
+```
+export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+```
+Or run the executables as
+```
+LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH <EXECUTABLE> <...>
+```
+
+# Compiling
+```
+make
+```
+
+# Installing
+```
+sudo make install
+```
 
 # Notes
 The underlying design principles of the software library are that it runs in the command-line and utilizes pipes to handle inputs and outputs.
@@ -96,7 +95,7 @@ This flexibility is especially useful for testing the send/receive mechanisms wi
 There is a parent BUFFER class in BUFFER.h.
 This handles how data is stored and shared between objects.
 The arrays are dynamically allocated and the users are expected to use the accessor functions to modify/use the array as a data storage object.
-The accessor functions return a std::span (\url{https://en.cppreference.com/w/cpp/container/span}) which has the same nice functions as other standard library containers while maintaining a consistent memory layout.
+The accessor functions return a std::span (https://en.cppreference.com/w/cpp/container/span) which has the same nice functions as other standard library containers while maintaining a consistent memory layout.
 The reason why std::span was chosen over std::vector is because of the vector implementation for Booleans are stored bit-wise to be more compact which breaks the inputBuffer and outputBuffer implementations.
 BUFFER objects utilize reclaim(), steal(), and borrow() to determine how memory is shared between BUFFER objects.
 The reclaim() function reclaims memory which means that the BUFFER owns the memory from that point forward.
