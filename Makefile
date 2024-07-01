@@ -21,21 +21,27 @@ executables: $(BIN)
 
 # Default compilation with no dependent libraries
 $(BIN_DIR)/% : $(SRC_DIR)/%.cpp
+	@mkdir -p $(@D)
 	$(CXX) $(CFLAGS) $(WARNING) $< -o $@
 
 $(BIN_DIR)/d2cCalculator : $(SRC_DIR)/d2cCalculator.cpp
+	@mkdir -p $(@D)
 	$(CXX) $(CFLAGS) $(WARNING) $< -o $@ -larmadillo
 
 $(BIN_DIR)/decimator : $(SRC_DIR)/decimator.cpp
+	@mkdir -p $(@D)
 	$(CXX) $(CFLAGS) $(WARNING) $< -o $@ -liir
 
 $(BIN_DIR)/c2rFFT : $(SRC_DIR)/c2rFFT.cpp
+	@mkdir -p $(@D)
 	$(CXX) $(CFLAGS) $(WARNING) $< -o $@ -lfftw3
 
 $(BIN_DIR)/r2cFFT : $(SRC_DIR)/r2cFFT.cpp
+	@mkdir -p $(@D)
 	$(CXX) $(CFLAGS) $(WARNING) $< -o $@ -lfftw3
 
 $(BIN_DIR)/xcorrelator : $(SRC_DIR)/xcorrelator.cpp
+	@mkdir -p $(@D)
 	$(CXX) $(CFLAGS) $(WARNING) $< -o $@ -lfftw3
 
 install:
