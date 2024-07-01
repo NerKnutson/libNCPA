@@ -7,12 +7,6 @@ SRC=$(wildcard $(SRC_DIR)/*.cpp)
 BIN=$(SRC:$(SRC_DIR)/%.cpp=$(BIN_DIR)/%)
 
 CFLAGS=-DMAX_CHANNELS=128 --std=c++20 -I$(INC_DIR)
-LDLIBS=-liir -lfftw3
-#INCLUDE=-I $(LIBUSB_PREFIX)/include/libusb-1.0
-#UNAME := $(shell uname)
-#ifeq ($(UNAME), Linux)
-#LDLIBS += -ludev
-#endif
 
 # ADD MORE WARNINGS!
 #WARNING := -Wall -Wextra
@@ -25,8 +19,21 @@ all: executables
 
 executables: $(BIN)
 
+# Default compilation with no dependent libraries
 $(BIN_DIR)/% : $(SRC_DIR)/%.cpp
-	$(CXX) $(CFLAGS) $(WARNING) $< -o $@ $(LDLIBS)
+	$(CXX) $(CFLAGS) $(WARNING) $< -o $@
+
+$(BIN_DIR)/decimator : $(SRC_DIR)/decimator.cpp
+	$(CXX) $(CFLAGS) $(WARNING) $< -o $@ -liir
+
+$(BIN_DIR)/c2rFFT : $(SRC_DIR)/c2rFFT.cpp
+	$(CXX) $(CFLAGS) $(WARNING) $< -o $@ -lfftw3
+
+$(BIN_DIR)/r2cFFT : $(SRC_DIR)/r2cFFT.cpp
+	$(CXX) $(CFLAGS) $(WARNING) $< -o $@ -lfftw3
+
+$(BIN_DIR)/xcorrelator : $(SRC_DIR)/xcorrelator.cpp
+	$(CXX) $(CFLAGS) $(WARNING) $< -o $@ -lfftw3
 
 install:
 #	cp include/importArrayGeometry.h $(INSTALL_PREFIX)/include/
