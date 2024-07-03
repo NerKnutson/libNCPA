@@ -9,7 +9,7 @@ class generator {
 	public:
 		// Assume zero-th order for input
 		generator(size_t numberSamples): output(numberSamples) { }
-		generator(size_t numberSamples, size_t howMany): output(numberSamplesOutput,howMany) { }
+		generator(size_t numberSamples, size_t howMany): output(numberSamples,howMany) { }
 
 		// Expected to redefine hypothesis_test()
 		virtual int generate() { return true; }
