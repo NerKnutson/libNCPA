@@ -1,4 +1,4 @@
-#include "generators/polynomialGenerator.h"
+#include "generators/functionGenerator.h"
 
 #include <cstring>
 using namespace std;
@@ -9,7 +9,7 @@ int main(int argc, char* argv[]) {
 	double time_step = 1;
 	double time_offset = 0;
 
-	vector<polynomialTerm> vec({});
+	vector<functionTerm> vec({});
 	for (int arg = 0; arg < argc; ++arg) {
 		if (strcmp(argv[arg], "--num_samples") == 0) {
 			//set num_samples
@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
 			if (!sscanf(argv[arg + 1], "%lf,%lf,%lf,%lf", &amplitude, &coefficient, &offset, &power)) {
 				fprintf(stderr, "%s: failed to parse sin argumenet: '%s %s'", argv[0], argv[arg], argv[arg + 1]);
 			}
-			polynomialTerm newTerm = polynomialTerm("sin", amplitude, coefficient, offset, power);
+			functionTerm newTerm = functionTerm("sin", amplitude, coefficient, offset, power);
 			vec.insert(vec.end(), newTerm);
 		}
 		else if (strcmp(argv[arg], "cos") == 0) {
@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
 			if (!sscanf(argv[arg + 1], "%lf,%lf,%lf,%lf", &amplitude, &coefficient, &offset, &power)) {
 				fprintf(stderr, "%s: failed to parse cos argumenet: '%s %s'", argv[0], argv[arg], argv[arg + 1]);
 			}
-			polynomialTerm newTerm = polynomialTerm("cos", amplitude, coefficient, offset, power);
+			functionTerm newTerm = functionTerm("cos", amplitude, coefficient, offset, power);
 			vec.insert(vec.end(), newTerm);
 		}
 		else if (strcmp(argv[arg], "quad") == 0) {
@@ -68,12 +68,12 @@ int main(int argc, char* argv[]) {
 			if (!sscanf(argv[arg + 1], "%lf,%lf,%lf", &coefficient, &offset, &power)) {
 				fprintf(stderr, "%s: failed to parse quad argumenet: '%s %s'", argv[0], argv[arg], argv[arg + 1]);
 			}
-			polynomialTerm newTerm = polynomialTerm("quad", coefficient, offset, power);
+			functionTerm newTerm = functionTerm("quad", coefficient, offset, power);
 			vec.insert(vec.end(), newTerm);
 		}
 	}
 
-	polynomialGenerator<double> generator(num_samples, time_step, time_offset, vec);
+	functionGenerator<double> generator(num_samples, time_step, time_offset, vec);
 	double current_time = time_offset;
 	for (double i = 0; i < num_samples; i++) {
 		cout << "@ " << current_time << ", : ";

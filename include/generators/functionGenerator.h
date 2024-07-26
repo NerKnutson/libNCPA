@@ -1,5 +1,5 @@
-#ifndef POLYNOMIAL_GENERATOR_H
-#define POLYNOMIAL_GENERATOR_H
+#ifndef FUNCTION_GENERATOR_H
+#define FUNCTION_GENERATOR_H
 #include "GENERATOR.h"
 #include <vector>
 #include <string>
@@ -10,14 +10,14 @@
 
 # define M_PI           3.14159265358979323846  /* pi */
 
-class polynomialTerm {
+class functionTerm {
 public:
 	std::string type;
 	double amplitude;
 	double coefficient;
 	double offset;
 	double power;
-	polynomialTerm(std::string type, double amplitude, double coefficient, double offset, double power) {
+	functionTerm(std::string type, double amplitude, double coefficient, double offset, double power) {
 		// for sin/cos, it is in the form of amplitude * (sin(coefficient * t + offset) ^ power)
 		this->type = type; //should be "cos", or "sin"
 		this->amplitude = amplitude;
@@ -25,7 +25,7 @@ public:
 		this->offset = offset;
 		this->power = power;
 	}
-	polynomialTerm(std::string type, double coefficient, double offset, double power) {
+	functionTerm(std::string type, double coefficient, double offset, double power) {
 		// for a quadratic, it is in the form of coefficient * (t^power) + offset
 		this->type = type; //should be "quad"
 		this->amplitude = 1;
@@ -52,14 +52,14 @@ public:
 
 
 template <class S = double>
-class polynomialGenerator : public generator<S> {
+class functionGenerator : public generator<S> {
 	public:
 		double num_samples;
 		double time_step;
 		double offset;
-		std::vector<polynomialTerm> arr;
+		std::vector<functionTerm> arr;
 		double current_time;
-		polynomialGenerator(size_t num_samples, size_t time_step, size_t offset, std::vector<polynomialTerm> arr) : generator<S>(1) {
+		functionGenerator(size_t num_samples, size_t time_step, size_t offset, std::vector<functionTerm> arr) : generator<S>(1) {
 			this->num_samples = num_samples;
 			this->time_step = time_step;
 			this->offset = offset;
