@@ -28,6 +28,10 @@ $(BIN_DIR)/d2cCalculator : $(SRC_DIR)/d2cCalculator.cpp
 	@mkdir -p $(@D)
 	$(CXX) $(CFLAGS) $(WARNING) $< -o $@ -larmadillo
 
+$(BIN_DIR)/sampleD2C : $(SRC_DIR)/sampleD2C.cpp
+	@mkdir -p $(@D)
+	$(CXX) $(CFLAGS) $(WARNING) $< -o $@ -larmadillo
+
 $(BIN_DIR)/decimator : $(SRC_DIR)/decimator.cpp
 	@mkdir -p $(@D)
 	$(CXX) $(CFLAGS) $(WARNING) $< -o $@ -liir
