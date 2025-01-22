@@ -14,13 +14,10 @@ using namespace std;
 */
 
 int main(int argc, char* argv[]) {
-	/*if (argc != 2) {
-		cerr << "Usage: " << argv[0] << "" << endl;
-		return 1;
-	}*/
 	int N_channels = 9;
 	int N_dimensions = 3;
 
+	//Create 9 points to demonstrate D2C and MDS
 	geometryBuffer<double> initialPoints(N_channels, N_dimensions);
 	double initialPointsData[N_channels][N_dimensions] = { 
 		{0.0, 0.0, 0.0},
@@ -34,6 +31,7 @@ int main(int argc, char* argv[]) {
 		{-1.0, -1.0, -1.0}
 	};
 
+	//Print out the points
 	cout << "Initial Point Matrix " << endl;
 	for (int i = 0; i < N_channels; i++) {
 		for (int j = 0; j < N_dimensions; j++) {
@@ -41,15 +39,16 @@ int main(int argc, char* argv[]) {
 		}
 		cout << endl;
 	}
-	// 2-dimensional data for 5 points
-	//std::span<double> initialPointsSpan(initialPointsData);
 
+	//Get the distance matrix between points
 	double initialDistancesData[N_channels][N_channels];
 	for (int i = 0; i < N_channels; i++) {
 		for (int j = 0; j < N_channels; j++) {
 			initialDistancesData[i][j] = sqrt( pow((initialPointsData[j][0] - initialPointsData[i][0]), 2) + pow((initialPointsData[j][1] - initialPointsData[i][1]), 2) + pow((initialPointsData[j][2] - initialPointsData[i][2]), 2) );
 		}
 	}
+
+	//Print out the distance matrix
 	cout << endl << "Initial Distance Matrix " << endl;
 	for (int i = 0; i < N_channels; i++) {
 		for (int j = 0; j < N_channels; j++) {
@@ -58,35 +57,28 @@ int main(int argc, char* argv[]) {
 		}
 		cout << endl;
 	}
+
+	//Need to create a span to hold the distances, in order to feed into D2C
 	std::span<double> initialDistancesSpan(initialDistancesData[0], N_channels*N_channels);
-	//geometryBuffer<double> distances(N_channels, N_channels); //n by n matrix of distances between n nodes
-	//distances.read(initialDistancesSpan);
 	geometryBuffer<double> coordinates(N_channels, N_dimensions); //n by 2 matrix of coordinates
 
+	//Instantiate D2C
 	distanceToCoordinate<double> D2C(N_channels, N_dimensions);
 
-	/*while (D2C.read(std::cin)) {
-		if (!D2C.transform()) {
-			cerr << "Error in " << argv[0] << ":\n failed to transform." << endl;
-			return 1;
-		}
-		if (D2C.write(std::cout) < 0) {
-			cerr << "Error in " << argv[0] << ":\n failed to write." << endl;
-			return 1;
-		}
-	}*/
+	//Feed the data into D2C
 	D2C.read(initialDistancesSpan);
 
+	//Run D2C
 	if (!D2C.transform()) {
 		cerr << "Error in " << argv[0] << ":\n failed to transform." << endl;
 		return 1;
 	}
-	/*if (D2C.write(std::cout) < 0) {
-		cerr << "Error in " << argv[0] << ":\n failed to write." << endl;
-		return 1;
-	}*/
+
+	//Get the data out from D2C
 	double expectedPoints[N_channels][N_dimensions];
 	std::span<double> expectedPointsData = D2C.output.getData();
+
+	//Print out data
 	cout << endl << "Expected Points Data " << endl;;
 	for (int i = 0; i < N_channels; i++) {
 		for (int j = 0; j < N_dimensions; j++) {
@@ -96,6 +88,7 @@ int main(int argc, char* argv[]) {
 		cout << endl;
 	}
 
+	//Compare results with original distance matrix
 	double expectedDistancesData[N_channels][N_channels];
 	for (int i = 0; i < N_channels; i++) {
 		for (int j = 0; j < N_channels; j++) {
@@ -108,6 +101,8 @@ int main(int argc, char* argv[]) {
 			expectedDistancesData[i][j] *= scalingcoef;
 		}
 	}
+
+	//Print out new distance matrix
 	cout << endl << "Expected Distance Matrix " << "(scaling coef: " << scalingcoef << ")" << endl;
 	for (int i = 0; i < N_channels; i++) {
 		for (int j = 0; j < N_channels; j++) {
@@ -117,6 +112,7 @@ int main(int argc, char* argv[]) {
 		cout << endl;
 	}
 
+	//Measure accuracy through squared error
 	cout << endl << "Total squared error: ";
 	double squaresum = 0;
 	for (int i = 0; i < N_channels; i++) {
@@ -127,7 +123,10 @@ int main(int argc, char* argv[]) {
 	cout << squaresum << endl;
 
 
+	//Compare results of Noah's distance2Coordinates with MDS
 	cout << endl << "v2: " << endl;
+
+	//Create a distance matrix using Eigen, adn feed the same data in
 	MatrixXd D(N_channels, N_channels);
 	for (int i = 0; i < N_channels; i++) {
 		for (int j = 0; j < N_channels; j++) {
@@ -139,7 +138,6 @@ int main(int argc, char* argv[]) {
 	const MatrixXd X = MDS::computeMDS(D, 3).transpose();
 
 	// Show the result
-	//cout << X << endl;
 	cout << endl << "Expected Points Data 2 : " << endl;
 	for (int i = 0; i < N_channels; i++) {
 		for (int j = 0; j < N_dimensions; j++) {
@@ -148,6 +146,7 @@ int main(int argc, char* argv[]) {
 		cout << endl;
 	}
 
+	//Perform the same comparison of results
 	double expectedDistancesData2[N_channels][N_channels];
 	for (int i = 0; i < N_channels; i++) {
 		for (int j = 0; j < N_channels; j++) {
@@ -169,6 +168,7 @@ int main(int argc, char* argv[]) {
 		cout << endl;
 	}
 
+	//Find the accuracy of this second answer
 	cout << endl << "Total squared error: ";
 	double squaresum2 = 0;
 	for (int i = 0; i < N_channels; i++) {
