@@ -60,7 +60,15 @@ int main(int argc, char* argv[]) {
 
 	//Need to create a span to hold the distances, in order to feed into D2C
 	std::span<double> initialDistancesSpan(initialDistancesData[0], N_channels*N_channels);
-	geometryBuffer<double> coordinates(N_channels, N_dimensions); //n by 2 matrix of coordinates
+
+	/*cout << endl << endl << "COMPARING: " << endl;
+	for (int i = 0; i < N_channels; i++) {
+		for (int j = 0; j < N_channels; j++) {
+			cout << initialDistancesSpan[i * N_channels + j] << " " << initialDistancesData[i][j] << endl;
+		}
+	}
+	cout << endl << endl;*/
+	//geometryBuffer<double> coordinates(N_channels, N_dimensions); //n by 2 matrix of coordinates
 
 	//Instantiate D2C
 	distanceToCoordinate<double> D2C(N_channels, N_dimensions);
@@ -76,7 +84,7 @@ int main(int argc, char* argv[]) {
 
 	//Get the data out from D2C
 	double expectedPoints[N_channels][N_dimensions];
-	std::span<double> expectedPointsData = D2C.output.getData();
+	std::span<double> expectedPointsData = D2C.coordinates.getData();
 
 	//Print out data
 	cout << endl << "Expected Points Data " << endl;;

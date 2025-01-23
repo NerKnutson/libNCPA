@@ -44,7 +44,9 @@ class distanceToCoordinate : public transformer<S,double> {
 			arma::vec eigenValues;
 			arma::mat eigenVectors;
 			this->bufferLock.lock();
-			arma::mat gramianMatrix = 0.5*(onesCol * distanceMatrix.row(0) + distanceMatrix.col(0) * onesRow - distanceMatrix);
+			//arma::mat gramianMatrix = 0.5*(onesCol * distanceMatrix.row(0) + distanceMatrix.col(0) * onesRow - distanceMatrix);
+			arma::mat H = arma::eye(N_channels, N_channels) - (1.0 / N_channels) * arma::ones(N_channels) * arma::trans(arma::ones(N_channels));
+			arma::mat gramianMatrix = -0.5 * H * distanceMatrix * H;
 			this->bufferLock.unlock();
 			arma::eig_sym(eigenValues, eigenVectors, gramianMatrix);
 			eigenValues = eigenValues.tail(3);
