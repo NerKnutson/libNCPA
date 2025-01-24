@@ -2,11 +2,6 @@
 #include <cstring> // std::strcmp(char*,char*)
 #include "transformers/distanceToCoordinate.h" // distanceToCoordinate(int,int)
 
-#include <eigen3/Eigen/Core>
-#include <vector>
-#include "mds.h"
-
-using namespace Eigen;
 using namespace std;
 
 /*
@@ -129,63 +124,6 @@ int main(int argc, char* argv[]) {
 		}
 	}
 	cout << squaresum << endl;
-
-
-	//Compare results of Noah's distance2Coordinates with MDS
-	cout << endl << "v2: " << endl;
-
-	//Create a distance matrix using Eigen, adn feed the same data in
-	MatrixXd D(N_channels, N_channels);
-	for (int i = 0; i < N_channels; i++) {
-		for (int j = 0; j < N_channels; j++) {
-			D(i, j) = sqrt(pow((initialPointsData[j][0] - initialPointsData[i][0]), 2) + pow((initialPointsData[j][1] - initialPointsData[i][1]), 2) + pow((initialPointsData[j][2] - initialPointsData[i][2]), 2));
-		}
-	}
-
-	// Compute MDS (embedding into a 3-dimensional space)
-	const MatrixXd X = MDS::computeMDS(D, 3).transpose();
-
-	// Show the result
-	cout << endl << "Expected Points Data 2 : " << endl;
-	for (int i = 0; i < N_channels; i++) {
-		for (int j = 0; j < N_dimensions; j++) {
-			cout << X(i, j)<< "\t";
-		}
-		cout << endl;
-	}
-
-	//Perform the same comparison of results
-	double expectedDistancesData2[N_channels][N_channels];
-	for (int i = 0; i < N_channels; i++) {
-		for (int j = 0; j < N_channels; j++) {
-			expectedDistancesData2[i][j] = sqrt(pow((X(j, 0) - X(i, 0)), 2) + pow((X(j, 1) - X(i, 1)), 2) + pow((X(j, 2) - X(i, 2)), 2));
-		}
-	}
-	double scalingcoef2 = initialDistancesData[0][N_channels - 1] / expectedDistancesData2[0][N_channels - 1];
-	for (int i = 0; i < N_channels; i++) {
-		for (int j = 0; j < N_channels; j++) {
-			expectedDistancesData2[i][j] *= scalingcoef2;
-		}
-	}
-	cout << endl << "Expected Distance Matrix " << "(scaling coef: " << scalingcoef2 << ")" << endl;
-	for (int i = 0; i < N_channels; i++) {
-		for (int j = 0; j < N_channels; j++) {
-			//cout << expectedDistancesData[i][j] << " ";
-			printf("%.2f ", expectedDistancesData2[i][j]);
-		}
-		cout << endl;
-	}
-
-	//Find the accuracy of this second answer
-	cout << endl << "Total squared error: ";
-	double squaresum2 = 0;
-	for (int i = 0; i < N_channels; i++) {
-		for (int j = 0; j < N_channels; j++) {
-			squaresum2 += pow(expectedDistancesData2[i][j] - initialDistancesData[i][j], 2);
-		}
-	}
-	cout << squaresum2 << endl;
-
 
 	return 0;
 }
