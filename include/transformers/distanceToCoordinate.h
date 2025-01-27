@@ -36,6 +36,11 @@ class distanceToCoordinate : public transformer<S,double> {
 			auto head_I = this->input.getBuffer();
 			auto head_O = this->output.getBuffer(); // Newest data
 
+			//Square input buffer
+			for (int i = 0; i < N_channels * N_channels; i++) {
+				head_I[i] = head_I[i] * head_I[i];
+			}
+
 			// Set up matrix access
 			distanceMatrix = arma::mat(&head_I[0], N_channels, N_channels, false, true);
 			arma::colvec onesCol(N_channels,arma::fill::ones);

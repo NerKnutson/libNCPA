@@ -5,14 +5,14 @@
 using namespace std;
 
 /*
-	A sample program to demonstrate the flow from geometry buffers holding distances through D2C to a geometry buffer holding coordinates
+	A sample program to demonstrate the flow from spans holding distances through D2C to a span holding coordinates
 */
 
 int main(int argc, char* argv[]) {
 	int N_channels = 9;
 	int N_dimensions = 3;
 
-	//Create 9 points to demonstrate D2C and MDS
+	//Create 9 points to demonstrate D2C
 	geometryBuffer<double> initialPoints(N_channels, N_dimensions);
 	double initialPointsData[N_channels][N_dimensions] = { 
 		{0.0, 0.0, 0.0},
@@ -55,15 +55,6 @@ int main(int argc, char* argv[]) {
 
 	//Need to create a span to hold the distances, in order to feed into D2C
 	std::span<double> initialDistancesSpan(initialDistancesData[0], N_channels*N_channels);
-
-	/*cout << endl << endl << "COMPARING: " << endl;
-	for (int i = 0; i < N_channels; i++) {
-		for (int j = 0; j < N_channels; j++) {
-			cout << initialDistancesSpan[i * N_channels + j] << " " << initialDistancesData[i][j] << endl;
-		}
-	}
-	cout << endl << endl;*/
-	//geometryBuffer<double> coordinates(N_channels, N_dimensions); //n by 2 matrix of coordinates
 
 	//Instantiate D2C
 	distanceToCoordinate<double> D2C(N_channels, N_dimensions);
