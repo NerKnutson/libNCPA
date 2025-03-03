@@ -6,7 +6,8 @@ EXAMPLES_DIR=examples
 
 SRC=$(wildcard $(SRC_DIR)/*.cpp)
 BIN=$(SRC:$(SRC_DIR)/%.cpp=$(BIN_DIR)/%)
-EXAMPLES=$(SRC:$(EXAMPLES_DIR)/%.cpp=$(EXAMPLES_DIR)/%)
+EXAMPLES=$(wildcard $(EXAMPLES_DIR)/*.cpp)
+EXAMPLES_BIN=$(EXAMPLES:$(EXAMPLES_DIR)/%.cpp=$(EXAMPLES_DIR)/%)
 
 CFLAGS=-DMAX_CHANNELS=128 --std=c++20 -I$(INC_DIR)
 
@@ -19,6 +20,8 @@ CFLAGS=-DMAX_CHANNELS=128 --std=c++20 -I$(INC_DIR)
 
 all: executables
 
+examples: $(EXAMPLES)
+
 executables: $(BIN)
 
 # Default compilation with no dependent libraries
@@ -30,7 +33,7 @@ $(BIN_DIR)/d2cCalculator : $(SRC_DIR)/d2cCalculator.cpp
 	@mkdir -p $(@D)
 	$(CXX) $(CFLAGS) $(WARNING) $< -o $@ -larmadillo
 
-$(EXAMPLES_DIR)/sampleD2C : $(SRC_DIR)/sampleD2C.cpp
+$(EXAMPLES_DIR)/sampleD2C : $(EXAMPLES_DIR)/sampleD2C.cpp
 	@mkdir -p $(@D)
 	$(CXX) $(CFLAGS) $(WARNING) $< -o $@ -larmadillo
 
