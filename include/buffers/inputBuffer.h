@@ -39,6 +39,20 @@ class inputBuffer: public buffer<S> {
 			bufferLock.unlock();
 			return bufferContainer.size()*sizeof(S);
 		}
+		inline int read(std::span<S> input) {
+			++head;
+			auto bufferContainer = this->getBuffer();
+			if (input.size() < bufferContainer.size()) {
+				bufferLock.lock();
+				std::copy(input.begin(), input.end(), bufferContainer.begin());
+				bufferLock.unlock();
+				return input.size() * sizeof(S);
+			}
+			bufferLock.lock();
+			std::copy(input.begin(), input.begin() + bufferContainer.size(), bufferContainer.begin());
+			bufferLock.unlock();
+			return bufferContainer.size() * sizeof(S);
+		}
 /**************************************************************
 * The following gives nice container properties for the buffers
 * But requires std=c++20

@@ -2,9 +2,11 @@ INSTALL_PREFIX?=/usr/local
 INC_DIR=include
 SRC_DIR=src
 BIN_DIR=bin
+EXAMPLES_DIR=examples
 
 SRC=$(wildcard $(SRC_DIR)/*.cpp)
 BIN=$(SRC:$(SRC_DIR)/%.cpp=$(BIN_DIR)/%)
+EXAMPLES=$(SRC:$(EXAMPLES_DIR)/%.cpp=$(EXAMPLES_DIR)/%)
 
 CFLAGS=-DMAX_CHANNELS=128 --std=c++20 -I$(INC_DIR)
 
@@ -25,6 +27,10 @@ $(BIN_DIR)/% : $(SRC_DIR)/%.cpp
 	$(CXX) $(CFLAGS) $(WARNING) $< -o $@
 
 $(BIN_DIR)/d2cCalculator : $(SRC_DIR)/d2cCalculator.cpp
+	@mkdir -p $(@D)
+	$(CXX) $(CFLAGS) $(WARNING) $< -o $@ -larmadillo
+
+$(EXAMPLES_DIR)/sampleD2C : $(SRC_DIR)/sampleD2C.cpp
 	@mkdir -p $(@D)
 	$(CXX) $(CFLAGS) $(WARNING) $< -o $@ -larmadillo
 
